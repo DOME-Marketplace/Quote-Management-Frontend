@@ -1,149 +1,54 @@
-/* Custom styles for Quotes Dashboard */
+// Legacy Quotes Dashboard JavaScript - DEPRECATED
+// This file is kept for backward compatibility only
+// The application has been restructured into modular components in src/js/
 
-/* Table row hover effects */
-.grid.grid-cols-5:hover {
-    background-color: #f9fafb;
-}
+console.warn('quotes.js is deprecated. Please use the modular structure in src/js/');
 
-/* Status badges styling */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 12px;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: capitalize;
-}
-
-.status-inProgress {
-    background-color: #fef3c7;
-    color: #92400e;
-    border: 1px solid #f59e0b;
-}
-
-.status-pending {
-    background-color: #fce7f3;
-    color: #be185d;
-    border: 1px solid #ec4899;
-}
-
-.status-completed {
-    background-color: #d1fae5;
-    color: #065f46;
-    border: 1px solid #10b981;
-}
-
-.status-cancelled {
-    background-color: #fee2e2;
-    color: #991b1b;
-    border: 1px solid #ef4444;
-}
-
-.status-unknown {
-    background-color: #f3f4f6;
-    color: #374151;
-    border: 1px solid #6b7280;
-}
-
-/* Loading skeleton animation */
-.loading-skeleton {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: loading 1.5s infinite;
-}
-
-@keyframes loading {
-    0% {
-        background-position: 200% 0;
-    }
-    100% {
-        background-position: -200% 0;
+// Redirect to the new modular version
+if (typeof window !== 'undefined') {
+    console.log('Loading modular quote management application...');
+    
+    // Simple check if we're in the right context
+    const currentPage = window.location.pathname;
+    
+    if (currentPage.includes('index.html') || currentPage === '/') {
+        // We're on the main page, the new modular app.js will handle everything
+        console.log('Modular quote management will be loaded by src/js/app.js');
+    } else {
+        console.log('Please use the appropriate modular application for this page');
     }
 }
 
-/* Text truncation utility */
-.truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
+// Legacy global variables for backward compatibility
+window.LEGACY_QUOTES_JS_LOADED = true;
 
-/* Focus states for accessibility */
-button:focus,
-select:focus {
-    outline: 2px solid #3b82f6;
-    outline-offset: 2px;
-}
+// Note: All functionality has been moved to:
+// - src/js/app.js (main quotes application)
+// - src/js/modules/ (core functionality modules)
+// - src/js/components/ (reusable UI components)
 
-/* Button hover effects */
-button.bg-blue-600:hover {
-    background-color: #2563eb;
-}
-
-button.text-blue-600:hover {
-    color: #1d4ed8;
-}
-
-button.text-gray-600:hover {
-    color: #111827;
-}
-
-/* Statistics cards hover effect */
-.bg-white.p-4.rounded-lg.border:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: box-shadow 0.2s ease-in-out;
-}
-
-/* Table styling */
-.bg-blue-50 {
-    background-color: #eff6ff;
-}
-
-/* Custom scrollbar for webkit browsers */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #a1a1a1;
-}
-
-/* Print styles */
-@media print {
-    .bg-white {
-        box-shadow: none;
-        border: 1px solid #ddd;
-    }
-
-    button {
-        display: none;
-    }
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-    .status-badge {
-        border-width: 2px;
-        font-weight: 600;
-    }
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-    .loading-skeleton,
-    button {
-        transition: none;
-        animation: none;
-    }
-}
+/*
+ * MIGRATION NOTES:
+ * 
+ * Old Structure:
+ * - quotes.js (386 lines of mixed functionality)
+ * 
+ * New Modular Structure:
+ * - src/js/app.js (main application coordinator)
+ * - src/js/modules/api.js (API communication)
+ * - src/js/modules/auth.js (authentication)
+ * - src/js/modules/utils.js (utility functions)
+ * - src/js/modules/dom.js (DOM manipulation)
+ * - src/js/modules/stats.js (statistics)
+ * - src/js/modules/Filter.js (filtering)
+ * - src/js/modules/QuoteActions.js (user actions)
+ * - src/js/modules/Renderer.js (UI rendering)
+ * - src/js/components/QuoteRow.js (quote display component)
+ * 
+ * Benefits of new structure:
+ * - Separation of concerns
+ * - Easier testing and maintenance
+ * - Better code organization
+ * - Reusable components
+ * - Modern ES6 modules
+ */

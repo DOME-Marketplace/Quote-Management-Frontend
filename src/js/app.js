@@ -5,6 +5,7 @@ import { Stats } from './modules/stats.js';
 import { Renderer } from './modules/Renderer.js';
 import { Filter } from './modules/Filter.js';
 import { QuoteActions } from './modules/QuoteActions.js';
+import { Auth } from './modules/auth.js';
 import { APP_CONFIG } from './modules/config.js';
 
 // Application state
@@ -24,6 +25,17 @@ class QuoteManagementApp {
     // Initialize the application
     async init() {
         console.log('Initializing Quotes Dashboard...');
+
+        // Check authentication
+        const authResult = Auth.initPage({
+            requireAuth: true,
+            onAuth: (username) => {
+                Auth.updateUserDisplay();
+                console.log(`Quotes dashboard loaded for user: ${username}`);
+            }
+        });
+
+        if (!authResult) return; // Redirected to login
 
         // Initialize filter with callback
         AppState.filter = new Filter((filteredQuotes) => {
@@ -201,6 +213,10 @@ window.loadQuotes = () => app.loadQuotes();
 window.refreshData = () => app.refresh();
 window.clearFilters = () => app.clearFilters();
 window.exportData = (format) => app.exportData(format);
+window.handleLogout = () => {
+    Auth.logout();
+    window.location.href = 'login.html';
+};
 
 // Initialize application when DOM is ready
 let app;
