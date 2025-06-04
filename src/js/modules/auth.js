@@ -2,30 +2,98 @@
 export const Auth = {
     // Check if user is authenticated
     isAuthenticated: () => {
-        return sessionStorage.getItem('username') !== null;
+        return sessionStorage.getItem('userId') !== null;
     },
 
-    // Get current username
+    // Get current user ID
+    getCurrentUserId: () => {
+        return sessionStorage.getItem('userId');
+    },
+
+    // Get current user data (including type determination)
     getCurrentUser: () => {
-        return sessionStorage.getItem('username');
+        const userId = sessionStorage.getItem('userId');
+        if (!userId) return null;
+
+        return {
+            userId: userId,
+            userType: Auth.getUserType(userId),
+            displayName: Auth.getDisplayName(userId)
+        };
+    },
+
+    // Determine user type from User ID
+    getUserType: (userId) => {
+        if (!userId) return 'unknown';
+        
+        // Simple check: if User ID contains "individual", it's a customer
+        if (userId.includes('individual')) {
+            return 'customer';
+        }
+        
+        // Otherwise, it's a provider
+        return 'provider';
+    },
+
+    // Get display name from User ID
+    getDisplayName: (userId) => {
+        if (!userId) return 'Unknown User';
+        
+        // Extract a readable part from the User ID
+        const idPart = userId.split(':').pop();
+        const shortId = idPart ? idPart.substring(0, 8) : 'unknown';
+        const userType = Auth.getUserType(userId);
+        
+        return `${userType.charAt(0).toUpperCase() + userType.slice(1)} (${shortId})`;
+    },
+
+    // Check if current user is of specific type
+    isUserType: (type) => {
+        const user = Auth.getCurrentUser();
+        return user && user.userType === type;
+    },
+
+    // Check if current user is customer
+    isCustomer: () => {
+        return Auth.isUserType('customer');
+    },
+
+    // Check if current user is provider
+    isProvider: () => {
+        return Auth.isUserType('provider');
     },
 
     // Login user
-    login: (username) => {
-        if (!username || username.trim() === '') {
-            throw new Error('Username is required');
+    login: (userId) => {
+        if (!userId || userId.trim() === '') {
+            throw new Error('User ID is required');
         }
         
-        sessionStorage.setItem('username', username.trim());
-        console.log(`User ${username} logged in successfully`);
+        const trimmedUserId = userId.trim();
+        
+        // Validate User ID format (basic validation)
+        if (!trimmedUserId.startsWith('urn:ngsi-ld:individual:')) {
+            throw new Error('Invalid User ID format');
+        }
+        
+        // Store user data
+        sessionStorage.setItem('userId', trimmedUserId);
+        sessionStorage.setItem('loginTime', new Date().toISOString());
+        sessionStorage.setItem('lastActivity', new Date().toISOString());
+        
+        const userType = Auth.getUserType(trimmedUserId);
+        console.log(`User logged in successfully - ID: ${trimmedUserId}, Type: ${userType}`);
+        
         return true;
     },
 
     // Logout user
     logout: () => {
-        const username = sessionStorage.getItem('username');
-        sessionStorage.removeItem('username');
-        console.log(`User ${username} logged out`);
+        const userId = sessionStorage.getItem('userId');
+        sessionStorage.removeItem('userId');
+        sessionStorage.removeItem('loginTime');
+        sessionStorage.removeItem('lastActivity');
+        console.log(`User ${userId} logged out`);
         return true;
     },
 
@@ -55,7 +123,8 @@ export const Auth = {
             loginUrl = 'login.html',
             homeUrl = 'products.html',
             onAuth = null,
-            onUnauth = null
+            onUnauth = null,
+            requiredUserType = null
         } = options;
 
         if (requireAuth && !Auth.isAuthenticated()) {
@@ -68,11 +137,18 @@ export const Auth = {
             return false;
         }
 
-        const username = Auth.getCurrentUser();
+        const user = Auth.getCurrentUser();
         
-        if (username && onAuth) {
-            onAuth(username);
-        } else if (!username && onUnauth) {
+        // Check if specific user type is required
+        if (requiredUserType && user && user.userType !== requiredUserType) {
+            console.warn(`Access denied. Required user type: ${requiredUserType}, Current: ${user.userType}`);
+            // Could redirect to access denied page or show error
+            return false;
+        }
+        
+        if (user && onAuth) {
+            onAuth(user);
+        } else if (!user && onUnauth) {
             onUnauth();
         }
 
@@ -80,22 +156,41 @@ export const Auth = {
     },
 
     // Update UI with user info
-    updateUserDisplay: (elementId = 'username-display') => {
+    updateUserDisplay: (elementId = 'user-display') => {
         const element = document.getElementById(elementId);
-        const username = Auth.getCurrentUser();
+        const user = Auth.getCurrentUser();
         
-        if (element && username) {
-            element.textContent = `Welcome, ${username}`;
+        if (element && user) {
+            element.innerHTML = `
+                <span class="user-info">
+                    <i class="bi bi-person-circle me-1"></i>
+                    ${user.displayName}
+                    <small class="text-muted">(${user.userType})</small>
+                </span>
+            `;
         }
+    },
+
+    // Get user data for API calls or other uses
+    getUserData: () => {
+        const user = Auth.getCurrentUser();
+        if (!user) return null;
+
+        return {
+            userId: user.userId,
+            userType: user.userType,
+            displayName: user.displayName,
+            loginTime: sessionStorage.getItem('loginTime'),
+            lastActivity: sessionStorage.getItem('lastActivity')
+        };
     },
 
     // Session management
     session: {
         // Extend session
         extend: () => {
-            const username = Auth.getCurrentUser();
-            if (username) {
-                sessionStorage.setItem('username', username);
+            const userId = Auth.getCurrentUserId();
+            if (userId) {
                 sessionStorage.setItem('lastActivity', new Date().toISOString());
             }
         },

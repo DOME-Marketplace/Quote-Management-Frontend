@@ -179,24 +179,7 @@ class QuoteManagementApp {
         };
     }
 
-    // Export data (future implementation)
-    exportData(format = 'json') {
-        const filteredQuotes = AppState.filter.getFilteredQuotes();
-        console.log(`Exporting ${filteredQuotes.length} quotes in ${format} format`);
-        
-        // Future implementation for different export formats
-        if (format === 'json') {
-            const dataStr = JSON.stringify(filteredQuotes, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-            
-            const exportFileDefaultName = `quotes-export-${new Date().toISOString().split('T')[0]}.json`;
-            
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-        }
-    }
+
 
     // Cleanup resources
     cleanup() {
@@ -212,7 +195,6 @@ class QuoteManagementApp {
 window.loadQuotes = () => app.loadQuotes();
 window.refreshData = () => app.refresh();
 window.clearFilters = () => app.clearFilters();
-window.exportData = (format) => app.exportData(format);
 window.handleLogout = () => {
     Auth.logout();
     window.location.href = 'login.html';

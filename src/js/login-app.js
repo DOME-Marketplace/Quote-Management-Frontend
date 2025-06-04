@@ -36,17 +36,17 @@ class LoginApp {
             });
         }
 
-        // Enter key on username field
-        const usernameInput = document.getElementById('username');
-        if (usernameInput) {
-            usernameInput.addEventListener('keypress', (e) => {
+        // Enter key on user ID field
+        const userIdInput = document.getElementById('userId');
+        if (userIdInput) {
+            userIdInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     this.handleLogin(e);
                 }
             });
 
-            // Focus on username field
-            usernameInput.focus();
+            // Focus on user ID field
+            userIdInput.focus();
         }
     }
 
@@ -54,17 +54,17 @@ class LoginApp {
     handleLogin(event) {
         event.preventDefault();
 
-        const usernameInput = document.getElementById('username');
-        if (!usernameInput) {
-            this.showError('Username field not found');
+        const userIdInput = document.getElementById('userId');
+        if (!userIdInput) {
+            this.showError('User ID field not found');
             return false;
         }
 
-        const username = usernameInput.value.trim();
+        const userId = userIdInput.value.trim();
 
-        if (!username) {
-            this.showError('Please enter a username');
-            usernameInput.focus();
+        if (!userId) {
+            this.showError('Please enter a User ID');
+            userIdInput.focus();
             return false;
         }
 
@@ -73,7 +73,7 @@ class LoginApp {
             this.showLoading(true);
 
             // Attempt login
-            Auth.login(username);
+            Auth.login(userId);
 
             // Show success message briefly
             this.showSuccess('Login successful! Redirecting...');
@@ -86,7 +86,7 @@ class LoginApp {
         } catch (error) {
             console.error('Login error:', error);
             this.showError(error.message || 'Login failed. Please try again.');
-            usernameInput.focus();
+            userIdInput.focus();
         } finally {
             this.showLoading(false);
         }
@@ -97,7 +97,7 @@ class LoginApp {
     // Show loading state
     showLoading(isLoading) {
         const submitButton = document.querySelector('#loginForm button[type="submit"]');
-        const usernameInput = document.getElementById('username');
+        const userIdInput = document.getElementById('userId');
 
         if (submitButton) {
             if (isLoading) {
@@ -108,12 +108,12 @@ class LoginApp {
                 `;
             } else {
                 submitButton.disabled = false;
-                submitButton.innerHTML = 'Login';
+                submitButton.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i>Login';
             }
         }
 
-        if (usernameInput) {
-            usernameInput.disabled = isLoading;
+        if (userIdInput) {
+            userIdInput.disabled = isLoading;
         }
     }
 
@@ -173,40 +173,6 @@ class LoginApp {
             existingSuccess.remove();
         }
     }
-
-    // Handle demo login options (for development)
-    addDemoLoginOptions() {
-        const form = document.getElementById('loginForm');
-        if (!form) return;
-
-        const demoDiv = document.createElement('div');
-        demoDiv.className = 'mt-3 text-center';
-        demoDiv.innerHTML = `
-            <p class="text-muted small mb-2">Demo Accounts:</p>
-            <div class="btn-group-vertical w-100" role="group">
-                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="loginApp.fillDemoUser('admin')">
-                    Admin User
-                </button>
-                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="loginApp.fillDemoUser('customer')">
-                    Customer User
-                </button>
-                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="loginApp.fillDemoUser('provider')">
-                    Provider User
-                </button>
-            </div>
-        `;
-        
-        form.appendChild(demoDiv);
-    }
-
-    // Fill demo user credentials
-    fillDemoUser(userType) {
-        const usernameInput = document.getElementById('username');
-        if (usernameInput) {
-            usernameInput.value = userType;
-            usernameInput.focus();
-        }
-    }
 }
 
 // Global functions for HTML onclick handlers
@@ -222,11 +188,6 @@ let loginApp;
 document.addEventListener('DOMContentLoaded', () => {
     loginApp = new LoginApp();
     window.loginApp = loginApp;
-    
-    // Add demo login options in development
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        loginApp.addDemoLoginOptions();
-    }
 });
 
 // Export for potential external use
