@@ -11,6 +11,9 @@ RUN rm -rf ./*
 COPY index.html .
 COPY styles.css .
 COPY quotes.js .
+COPY products.html .
+COPY products.js .
+COPY login.html .
 
 # Copy custom nginx configuration (optional)
 COPY nginx.conf /etc/nginx/conf.d/default.conf
