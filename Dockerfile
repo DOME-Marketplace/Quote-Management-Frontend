@@ -8,9 +8,13 @@ WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
 
 # Copy application files
-COPY index.html .
-COPY styles.css .
-COPY quotes.js .
+COPY src/index.html ./index.html
+COPY src/styles.css ./styles.css
+COPY src/css/ ./css/
+COPY src/js/ ./js/
+
+# Copy legacy files for backwards compatibility
+COPY quotes.js ./quotes.js
 
 # Copy custom nginx configuration (optional)
 COPY nginx.conf /etc/nginx/conf.d/default.conf

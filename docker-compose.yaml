@@ -6,5 +6,7 @@ services:
     ports:
       - "8081:80"
     volumes:
-      - .:/usr/share/nginx/html
+      - ./src:/usr/share/nginx/html
+      - ./quotes.js:/usr/share/nginx/html/quotes.js
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
     restart: unless-stopped
