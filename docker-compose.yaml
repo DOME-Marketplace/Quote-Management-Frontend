@@ -4,7 +4,7 @@ services:
   quote-management:
     build: .
     ports:
-      - "8080:80"
+      - "8081:80"
     volumes:
       - .:/usr/share/nginx/html
     restart: unless-stopped
