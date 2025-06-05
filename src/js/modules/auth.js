@@ -26,13 +26,18 @@ export const Auth = {
     getUserType: (userId) => {
         if (!userId) return 'unknown';
         
-        // Simple check: if User ID contains "individual", it's a customer
+        // Check for individual users (customers)
         if (userId.includes('individual')) {
             return 'customer';
         }
         
-        // Otherwise, it's a provider
-        return 'provider';
+        // Check for organization users (providers)
+        if (userId.includes('organization')) {
+            return 'provider';
+        }
+        
+        // Default fallback
+        return 'unknown';
     },
 
     // Get display name from User ID
@@ -72,7 +77,8 @@ export const Auth = {
         const trimmedUserId = userId.trim();
         
         // Validate User ID format (basic validation)
-        if (!trimmedUserId.startsWith('urn:ngsi-ld:individual:')) {
+        if (!trimmedUserId.startsWith('urn:ngsi-ld:') || 
+            (!trimmedUserId.includes('individual:') && !trimmedUserId.includes('organization:'))) {
             throw new Error('Invalid User ID format');
         }
         

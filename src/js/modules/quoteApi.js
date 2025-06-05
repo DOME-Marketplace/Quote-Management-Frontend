@@ -184,7 +184,7 @@ export const QuoteAPI = {
             const url = `${QUOTE_API_CONFIG.baseUrl}${QUOTE_API_CONFIG.endpoints.addNoteToQuote}/${encodeURIComponent(quoteId)}?userId=${encodeURIComponent(userId)}&messageContent=${encodeURIComponent(messageContent)}`;
             
             const response = await fetch(url, {
-                method: 'POST',
+                method: 'PATCH',
                 headers: QUOTE_API_CONFIG.headers,
                 signal: controller.signal
             });
@@ -192,7 +192,17 @@ export const QuoteAPI = {
             clearTimeout(timeoutId);
 
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                try {
+                    const errorData = await response.json();
+                    console.log('Backend error details:', errorData);
+                    if (errorData.message) {
+                        errorMessage += ` - ${errorData.message}`;
+                    }
+                } catch (parseError) {
+                    console.log('Could not parse error response as JSON');
+                }
+                throw new Error(errorMessage);
             }
 
             return response.status === 204 ? null : await response.json();
@@ -204,6 +214,64 @@ export const QuoteAPI = {
                 throw new Error('Request timeout - please try again');
             }
 
+            console.error('Add note API Error:', error);
+            throw error;
+        }
+    },
+
+    // Add attachment to quote (for file upload functionality)
+    async addAttachmentToQuote(quoteId, file, description = '') {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), QUOTE_API_CONFIG.timeout);
+
+        try {
+            // Create FormData for multipart/form-data upload
+            const formData = new FormData();
+            formData.append('file', file);
+            if (description) {
+                formData.append('description', description);
+            }
+
+            const url = `${QUOTE_API_CONFIG.baseUrl}${QUOTE_API_CONFIG.endpoints.addAttachmentToQuote}/${encodeURIComponent(quoteId)}`;
+            
+            // Don't set Content-Type header - let browser set it with boundary for multipart/form-data
+            const headers = {
+                'Accept': 'application/json'
+            };
+
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: headers,
+                body: formData,
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                try {
+                    const errorData = await response.json();
+                    console.log('Backend error details:', errorData);
+                    if (errorData.message) {
+                        errorMessage += ` - ${errorData.message}`;
+                    }
+                } catch (parseError) {
+                    console.log('Could not parse error response as JSON');
+                }
+                throw new Error(errorMessage);
+            }
+
+            return response.status === 204 ? null : await response.json();
+
+        } catch (error) {
+            clearTimeout(timeoutId);
+
+            if (error.name === 'AbortError') {
+                throw new Error('Request timeout - please try again');
+            }
+
+            console.error('Add attachment API Error:', error);
             throw error;
         }
     }

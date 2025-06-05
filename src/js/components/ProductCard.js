@@ -1,5 +1,6 @@
 // ProductCard component
 import { Utils } from '../modules/utils.js';
+import { Auth } from '../modules/auth.js';
 
 export const ProductCard = {
     // Create a Tailwind card for a product
@@ -32,11 +33,12 @@ export const ProductCard = {
                     <div class="flex space-x-2">
                         <button 
                             type="button" 
-                            class="flex-1 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 hover:border-blue-300 transition-colors"
+                            class="${Auth.isCustomer() ? 'flex-1' : 'w-full'} px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 hover:border-blue-300 transition-colors"
                             onclick="ProductActions.viewDetails('${product.id || ''}')"
                         >
                             View Details
                         </button>
+                        ${Auth.isCustomer() ? `
                         <button 
                             type="button" 
                             class="flex-1 px-3 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 hover:border-gray-300 transition-colors"
@@ -44,6 +46,7 @@ export const ProductCard = {
                         >
                             Request a Quote
                         </button>
+                        ` : ''}
                     </div>
                 </div>
             </div>
@@ -80,6 +83,7 @@ export const ProductCard = {
                         >
                             Details
                         </button>
+                        ${Auth.isCustomer() ? `
                         <button 
                             type="button" 
                             class="px-3 py-1 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded hover:bg-gray-100 transition-colors"
@@ -87,6 +91,7 @@ export const ProductCard = {
                         >
                             Quote
                         </button>
+                        ` : ''}
                     </div>
                 </div>
             </div>

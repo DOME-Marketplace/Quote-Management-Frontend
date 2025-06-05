@@ -9,7 +9,9 @@ export const Modal = {
             size = 'md', // sm, md, lg, xl, 2xl
             showCloseButton = true,
             backdrop = true,
-            keyboard = true
+            keyboard = true,
+            showFooter = true,
+            footerContent = null
         } = options;
 
         // Remove existing modal if present
@@ -26,6 +28,25 @@ export const Modal = {
             '5xl': 'max-w-5xl',
             '6xl': 'max-w-6xl'
         };
+
+        const defaultFooterContent = `
+            <div class="flex justify-end">
+                <button 
+                    type="button" 
+                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    onclick="Modal.hide()"
+                >
+                    Close
+                </button>
+            </div>
+        `;
+
+        const footerHTML = showFooter ? `
+            <!-- Modal Footer -->
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
+                ${footerContent || defaultFooterContent}
+            </div>
+        ` : '';
 
         const modalHTML = `
             <div id="modal-overlay" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4" ${backdrop ? 'onclick="Modal.handleBackdropClick(event)"' : ''}>
@@ -45,9 +66,11 @@ export const Modal = {
                     </div>
                     
                     <!-- Modal Body -->
-                    <div class="p-6 overflow-y-auto" style="max-height: calc(80vh - 160px);">
+                    <div class="p-6 overflow-y-auto" style="max-height: calc(80vh - ${showFooter ? '220px' : '160px'});">
                         ${content}
                     </div>
+
+                    ${footerHTML}
                 </div>
             </div>
         `;
