@@ -1,5 +1,6 @@
 // API module for handling external requests
 import { API_CONFIG } from './config.js';
+import { Auth } from './auth.js';
 
 export const API = {
     // Fetch quotes with CORS bypass
@@ -8,9 +9,17 @@ export const API = {
         const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.timeout);
 
         try {
-            console.log('Fetching quotes via proxy...');
+            // Get the current customerId from session
+            const customerId = Auth.getCurrentUserId();
+            if (!customerId) {
+                throw new Error('No customerId found in session');
+            }
 
-            const response = await fetch(API_CONFIG.baseUrl, {
+            // Build the backend URL
+            const url = `http://localhost:8080/quoteManagement/quoteByUser/${encodeURIComponent(customerId)}`;
+            console.log('Fetching quotes from backend:', url);
+
+            const response = await fetch(url, {
                 signal: controller.signal,
                 method: 'GET',
                 headers: {

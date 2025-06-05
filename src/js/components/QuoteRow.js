@@ -39,6 +39,16 @@ export const QuoteRow = {
                     >
                         Edit
                     </button>
+                    <button
+                        class="p-2 text-xs text-blue-500 hover:text-blue-700 transition-colors"
+                        title="Open chat"
+                        onclick="window.QuoteActions.openChat('${quote.id}')"
+                        aria-label="Open chat for quote ${quoteId}"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8L3 21l1.8-4A7.96 7.96 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         `;
@@ -75,6 +85,16 @@ export const QuoteRow = {
                         onclick="window.QuoteActions.edit('${quote.id}')"
                     >
                         Edit
+                    </button>
+                    <button
+                        class="p-2 text-xs text-blue-500 hover:text-blue-700 transition-colors"
+                        title="Open chat"
+                        onclick="window.QuoteActions.openChat('${quote.id}')"
+                        aria-label="Open chat for quote ${quoteId}"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8L3 21l1.8-4A7.96 7.96 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
                     </button>
                 </div>
             </div>

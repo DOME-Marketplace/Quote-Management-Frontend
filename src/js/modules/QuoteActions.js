@@ -66,7 +66,6 @@ export const QuoteActions = {
         console.log('Edit quote:', quoteId);
         // For now, show an alert. In the future, this could open an edit form
         alert(`Edit quote: ${Utils.extractShortId(quoteId)}`);
-
         // Future implementation could be:
         // - Open an edit form modal
         // - Navigate to an edit page
@@ -76,7 +75,6 @@ export const QuoteActions = {
     delete: (quoteId) => {
         console.log('Delete quote:', quoteId);
         const confirmDelete = confirm(`Are you sure you want to delete quote ${Utils.extractShortId(quoteId)}?`);
-
         if (confirmDelete) {
             // Future implementation: call API to delete quote
             console.log('Quote deletion confirmed');
@@ -183,7 +181,6 @@ export const QuoteActions = {
         delete: (quoteIds) => {
             const count = quoteIds.length;
             const confirmDelete = confirm(`Are you sure you want to delete ${count} quotes?`);
-
             if (confirmDelete) {
                 console.log('Bulk delete confirmed for:', quoteIds);
                 // Future implementation: call API for bulk delete
