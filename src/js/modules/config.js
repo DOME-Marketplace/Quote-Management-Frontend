@@ -1,5 +1,4 @@
 // Configuration module
-//TODO CHANGE THIS URL TO BACKEND
 export const API_CONFIG = {
     baseUrl: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://an-dhub-sbx.dome-project.eu/tmf-api/quoteManagement/v4/quote'),
     timeout: 15000, // 15 seconds
@@ -12,9 +11,10 @@ export const QUOTE_API_CONFIG = {
     endpoints: {
         createQuote: '/createQuote',
         getQuotes: '/quotes',
-        getQuoteById: '/quote',
+        getQuoteById: '/quoteById',
         updateQuote: '/updateQuote',
-        deleteQuote: '/deleteQuote'
+        deleteQuote: '/deleteQuote',
+        addNoteToQuote: '/addNoteToQuote'
     },
     timeout: 15000, // 15 seconds
     headers: {

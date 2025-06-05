@@ -1,5 +1,6 @@
 // Quote actions module
 import { Utils } from './utils.js';
+import { QuoteAPI } from './quoteApi.js';
 
 export const QuoteActions = {
     viewDetails: async (quoteId) => {
@@ -14,16 +15,25 @@ export const QuoteActions = {
                         <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onclick="document.getElementById('quote-details-modal').remove()" aria-label="Close details">&times;</button>
                         <h3 class="text-lg font-semibold mb-2">Quote Details</h3>
                         <div id="quote-details-content" class="text-sm text-gray-700">Loading...</div>
+                        
+                        <!-- Close Button -->
+                        <div class="flex justify-end pt-4 border-t border-gray-200 mt-6">
+                            <button 
+                                type="button" 
+                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                                onclick="document.getElementById('quote-details-modal').remove()"
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
             document.body.appendChild(modal);
         }
-        // Fetch quote details from backend
+        // Fetch quote details from backend using centralized API
         try {
-            const response = await fetch(`http://localhost:8080/quoteManagement/quoteById/${encodeURIComponent(quoteId)}`);
-            if (!response.ok) throw new Error('Failed to fetch quote details');
-            const data = await response.json();
+            const data = await QuoteAPI.getQuoteById(quoteId);
 
             // Get state from first quoteItem if present
             let itemState = '-';
@@ -58,7 +68,8 @@ export const QuoteActions = {
                 <div><b>Attachment:</b> ${hasAttachment}</div>
             `;
         } catch (err) {
-            document.getElementById('quote-details-content').innerHTML = `<span class='text-red-600'>Error loading details</span>`;
+            console.error('Error loading quote details:', err);
+            document.getElementById('quote-details-content').innerHTML = `<span class='text-red-600'>Error loading details: ${err.message}</span>`;
         }
     },
 
@@ -106,10 +117,27 @@ export const QuoteActions = {
                         <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onclick="document.getElementById('chat-modal').remove(); window.stopChatPolling && window.stopChatPolling();" aria-label="Close chat">&times;</button>
                         <h3 class="text-lg font-semibold mb-2">Chat for Quote <span id="chat-quote-id"></span></h3>
                         <div id="chat-messages" class="border rounded p-2 h-48 overflow-y-auto mb-4 bg-gray-50"></div>
-                        <form id="chat-form" class="flex space-x-2">
-                            <input id="chat-input" type="text" class="flex-1 border rounded px-2 py-1" placeholder="Type a message..." required />
-                            <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Send</button>
+                        <form id="chat-form">
+                            <input id="chat-input" type="text" class="w-full border rounded px-2 py-1 mb-4" placeholder="Type a message..." required />
                         </form>
+                        
+                        <!-- Action Buttons Row -->
+                        <div class="flex justify-between pt-4 border-t border-gray-200">
+                            <button 
+                                type="submit" 
+                                form="chat-form"
+                                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                            >
+                                Send
+                            </button>
+                            <button 
+                                type="button" 
+                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                                onclick="document.getElementById('chat-modal').remove(); window.stopChatPolling && window.stopChatPolling();"
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -122,9 +150,7 @@ export const QuoteActions = {
         // Funzione per caricare i messaggi
         async function loadMessages() {
             try {
-                const response = await fetch(`http://localhost:8080/quoteManagement/quoteById/${encodeURIComponent(quoteId)}`);
-                if (!response.ok) throw new Error('Failed to fetch chat messages');
-                const data = await response.json();
+                const data = await QuoteAPI.getQuoteById(quoteId);
                 const notes = Array.isArray(data.note) ? data.note : [];
                 if (notes.length === 0) {
                     messagesDiv.innerHTML = '<div class="text-gray-400 text-center">No messages yet.</div>';
@@ -162,14 +188,13 @@ export const QuoteActions = {
             const sendBtn = form.querySelector('button[type="submit"]');
             sendBtn.disabled = true;
             try {
-                const url = `http://localhost:8080/quoteManagement/addNoteToQuote/${encodeURIComponent(quoteId)}?userId=${encodeURIComponent(userId)}&messageContent=${encodeURIComponent(msg)}`;
-                const response = await fetch(url, { method: 'POST' });
-                if (!response.ok) throw new Error('Failed to send message');
+                await QuoteAPI.addNoteToQuote(quoteId, userId, msg);
                 input.value = '';
                 // Dopo l'invio aggiorna la lista dei messaggi
                 await loadMessages();
             } catch (err) {
-                alert('Errore durante l\'invio del messaggio');
+                console.error('Error sending message:', err);
+                alert(`Error sending message: ${err.message}`);
             } finally {
                 sendBtn.disabled = false;
             }

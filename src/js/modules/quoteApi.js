@@ -87,7 +87,7 @@ export const QuoteAPI = {
         const timeoutId = setTimeout(() => controller.abort(), QUOTE_API_CONFIG.timeout);
 
         try {
-            const response = await fetch(`${QUOTE_API_CONFIG.baseUrl}${QUOTE_API_CONFIG.endpoints.getQuoteById}/${quoteId}`, {
+            const response = await fetch(`${QUOTE_API_CONFIG.baseUrl}${QUOTE_API_CONFIG.endpoints.getQuoteById}/${encodeURIComponent(quoteId)}`, {
                 method: 'GET',
                 headers: QUOTE_API_CONFIG.headers,
                 signal: controller.signal
@@ -152,6 +152,39 @@ export const QuoteAPI = {
         try {
             const response = await fetch(`${QUOTE_API_CONFIG.baseUrl}${QUOTE_API_CONFIG.endpoints.deleteQuote}/${quoteId}`, {
                 method: 'DELETE',
+                headers: QUOTE_API_CONFIG.headers,
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            return response.status === 204 ? null : await response.json();
+
+        } catch (error) {
+            clearTimeout(timeoutId);
+
+            if (error.name === 'AbortError') {
+                throw new Error('Request timeout - please try again');
+            }
+
+            throw error;
+        }
+    },
+
+    // Add note to quote (for chat functionality)
+    async addNoteToQuote(quoteId, userId, messageContent) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), QUOTE_API_CONFIG.timeout);
+
+        try {
+            const url = `${QUOTE_API_CONFIG.baseUrl}${QUOTE_API_CONFIG.endpoints.addNoteToQuote}/${encodeURIComponent(quoteId)}?userId=${encodeURIComponent(userId)}&messageContent=${encodeURIComponent(messageContent)}`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
                 headers: QUOTE_API_CONFIG.headers,
                 signal: controller.signal
             });
