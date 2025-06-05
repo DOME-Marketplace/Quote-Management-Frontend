@@ -71,12 +71,7 @@ export const Auth = {
         
         const trimmedUserId = userId.trim();
         
-        // Validate User ID format (basic validation)
-        if (!trimmedUserId.startsWith('urn:ngsi-ld:individual:')) {
-            throw new Error('Invalid User ID format');
-        }
-        
-        // Store user data
+        // Store user data (removed strict validation)
         sessionStorage.setItem('userId', trimmedUserId);
         sessionStorage.setItem('loginTime', new Date().toISOString());
         sessionStorage.setItem('lastActivity', new Date().toISOString());

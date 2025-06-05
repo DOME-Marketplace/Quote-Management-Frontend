@@ -42,7 +42,7 @@ export const ProductCard = {
                             class="flex-1 px-3 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-md hover:bg-gray-100 hover:border-gray-300 transition-colors"
                             onclick="ProductActions.addToQuote('${product.id || ''}')"
                         >
-                            Add to Quote
+                            Request a Quote
                         </button>
                     </div>
                 </div>

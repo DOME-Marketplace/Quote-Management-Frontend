@@ -1,18 +1,155 @@
 // Product Actions module
+import { Modal } from '../components/Modal.js';
+import { QuoteAPI } from './quoteApi.js';
+
 export const ProductActions = {
     viewDetails: (productId) => {
         console.log('View product details:', productId);
-        // Future implementation: show product details modal or navigate to detail page
-        alert(`View details for product: ${productId}`);
+        
+        // Find product in global state
+        let product = null;
+        if (window.ProductAppState && window.ProductAppState.allProducts) {
+            product = window.ProductAppState.allProducts.find(p => p.id === productId);
+        }
+        
+        if (!product) {
+            // Fallback: search in DOM data attributes if state not available
+            const productCard = document.querySelector(`[data-product-id="${productId}"]`);
+            if (productCard) {
+                // Try to reconstruct basic product info from card
+                const name = productCard.querySelector('h3, h4')?.textContent || 'Unknown Product';
+                const description = productCard.querySelector('p')?.textContent || 'No description available';
+                product = {
+                    id: productId,
+                    name: name,
+                    description: description,
+                    lifecycleStatus: 'Unknown',
+                    lastUpdate: null
+                };
+            }
+        }
+        
+        if (product) {
+            const content = Modal.createProductDetailsContent(product);
+            Modal.show(content, {
+                title: `Product Details - ${product.name}`,
+                size: '4xl'
+            });
+        } else {
+            // Fallback alert if product not found
+            alert(`Product details not available for ID: ${productId}`);
+        }
     },
 
     addToQuote: (productId) => {
         console.log('Add product to quote:', productId);
-        // Future implementation: add product to current quote or create new quote
-        alert(`Add product ${productId} to quote`);
         
-        // Could integrate with quote management
-        // QuoteActions.createFromProduct(productId);
+        // Find product in global state
+        let product = null;
+        if (window.ProductAppState && window.ProductAppState.allProducts) {
+            product = window.ProductAppState.allProducts.find(p => p.id === productId);
+        }
+        
+        if (!product) {
+            // Fallback: search in DOM data attributes if state not available
+            const productCard = document.querySelector(`[data-product-id="${productId}"]`);
+            if (productCard) {
+                // Try to reconstruct basic product info from card
+                const name = productCard.querySelector('h3, h4')?.textContent || 'Unknown Product';
+                const description = productCard.querySelector('p')?.textContent || 'No description available';
+                product = {
+                    id: productId,
+                    name: name,
+                    description: description
+                };
+            }
+        }
+        
+        if (product) {
+            const content = Modal.createQuoteRequestContent(product);
+            Modal.show(content, {
+                title: 'Request Quote',
+                size: 'lg'
+            });
+        } else {
+            // Fallback alert if product not found
+            alert(`Product not found for quote request: ${productId}`);
+        }
+    },
+
+    // Handle quote request form submission
+    submitQuoteRequest: async (event, productId) => {
+        event.preventDefault();
+        
+        const form = event.target;
+        const formData = new FormData(form);
+        
+        // Get customer ID from authenticated user
+        const customerIdRef = window.Auth?.getCurrentUserId() || sessionStorage.getItem('userId');
+        if (!customerIdRef) {
+            alert('Please log in to request a quote.');
+            return false;
+        }
+        
+        // Find product to get provider ID
+        let product = null;
+        if (window.ProductAppState && window.ProductAppState.allProducts) {
+            product = window.ProductAppState.allProducts.find(p => p.id === productId);
+        }
+        
+        if (!product) {
+            alert('Product information not found. Please try again.');
+            return false;
+        }
+        
+        // Extract provider ID from product's related party
+        // Provider ID comes from productSpecification.relatedParty (from the chained API call)
+        const relatedParty = product.productSpecification?.relatedParty?.find(party => party.role === 'owner');
+        const providerIdRef = relatedParty?.id;
+
+        if (!providerIdRef) {
+            showMessage('Error: Unable to find provider information for this product', 'error');
+            return;
+        }
+
+        console.log('Provider ID (from productSpecification.relatedParty):', providerIdRef);
+        
+        // Create the payload according to backend requirements
+        const quoteRequest = {
+            customerMessage: formData.get('message'),
+            customerIdRef: customerIdRef,
+            providerIdRef: providerIdRef,
+            productOfferingId: productId // Now this will be a product offering ID
+        };
+        
+        // Disable the submit button to prevent double submission
+        const submitBtn = document.getElementById('send-request-btn');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+        }
+        
+        try {
+            const result = await QuoteAPI.createQuote(quoteRequest);
+            
+            // Close modal and show success message
+            Modal.hide();
+            alert('Quote request sent successfully! We will contact you soon.');
+            
+        } catch (error) {
+            console.error('Error submitting quote request:', error);
+            
+            // Re-enable button on error
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Request';
+            }
+            
+            // Show error message
+            alert('Failed to send quote request. Please try again or contact support.');
+        }
+        
+        return false; // Prevent default form submission
     },
 
     compareProducts: (productIds) => {

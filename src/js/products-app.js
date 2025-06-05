@@ -2,6 +2,7 @@
 import { ProductAPI } from './modules/productApi.js';
 import { ProductCard } from './components/ProductCard.js';
 import { ProductActions } from './modules/ProductActions.js';
+import { Modal } from './components/Modal.js';
 import { Auth } from './modules/auth.js';
 import { DOM } from './modules/dom.js';
 
@@ -41,6 +42,15 @@ class ProductCatalogApp {
 
         // Make ProductActions available globally for onclick handlers
         window.ProductActions = ProductActions;
+
+        // Make ProductAppState available globally for ProductActions
+        window.ProductAppState = ProductAppState;
+
+        // Make Modal available globally for onclick handlers
+        window.Modal = Modal;
+
+        // Make Auth available globally for ProductActions
+        window.Auth = Auth;
 
         // Load initial data
         await this.loadProducts();
