@@ -274,5 +274,50 @@ export const QuoteAPI = {
             console.error('Add attachment API Error:', error);
             throw error;
         }
+    },
+
+    // Update quote status (for cancelling and other status changes)
+    async updateQuoteStatus(quoteId, statusValue) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), QUOTE_API_CONFIG.timeout);
+
+        try {
+            // Use the user's backend endpoint with statusValue query parameter
+            const url = `${QUOTE_API_CONFIG.baseUrl}${QUOTE_API_CONFIG.endpoints.updateQuoteStatus}/${encodeURIComponent(quoteId)}?statusValue=${encodeURIComponent(statusValue)}`;
+            
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: QUOTE_API_CONFIG.headers,
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                try {
+                    const errorData = await response.json();
+                    console.log('Backend error details:', errorData);
+                    if (errorData.message) {
+                        errorMessage += ` - ${errorData.message}`;
+                    }
+                } catch (parseError) {
+                    console.log('Could not parse error response as JSON');
+                }
+                throw new Error(errorMessage);
+            }
+
+            return response.status === 204 ? null : await response.json();
+
+        } catch (error) {
+            clearTimeout(timeoutId);
+
+            if (error.name === 'AbortError') {
+                throw new Error('Request timeout - please try again');
+            }
+
+            console.error('Update quote status API Error:', error);
+            throw error;
+        }
     }
 }; 

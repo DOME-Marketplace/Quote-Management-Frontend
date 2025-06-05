@@ -67,9 +67,11 @@ export const ProductActions = {
         
         if (product) {
             const content = Modal.createQuoteRequestContent(product);
+            const footerContent = Modal.createQuoteRequestFooter(productId);
             Modal.show(content, {
                 title: 'Request Quote',
-                size: 'lg'
+                size: 'lg',
+                footerContent: footerContent
             });
         } else {
             // Fallback alert if product not found

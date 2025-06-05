@@ -109,6 +109,109 @@ export const QuoteActions = {
         alert(`Exporting quote: ${Utils.extractShortId(quoteId)}`);
     },
 
+    cancel: async (quoteId) => {
+        const shortId = Utils.extractShortId(quoteId);
+        const confirmCancel = confirm(`Are you sure you want to cancel quote ${shortId}?\n\nThis action cannot be undone and will disable all other quote actions.`);
+        
+        if (!confirmCancel) {
+            return;
+        }
+
+        try {
+            console.log('Cancelling quote:', quoteId);
+            
+            // Find the cancel button to show loading state
+            const cancelBtn = document.querySelector(`button[onclick*="cancel"][onclick*="${quoteId}"]`);
+            if (cancelBtn) {
+                cancelBtn.disabled = true;
+                cancelBtn.textContent = 'Cancelling...';
+            }
+
+            // Call API to update quote status to cancelled (British spelling as per API spec)
+            await QuoteAPI.updateQuoteStatus(quoteId, 'cancelled');
+            
+            console.log('Quote successfully cancelled');
+            alert(`Quote ${shortId} has been cancelled successfully.`);
+            
+            // Refresh the page to show updated status and disabled actions
+            window.location.reload();
+            
+        } catch (error) {
+            console.error('Error cancelling quote:', error);
+            alert(`Error cancelling quote: ${error.message}`);
+            
+            // Reset button state on error
+            const cancelBtn = document.querySelector(`button[onclick*="cancel"][onclick*="${quoteId}"]`);
+            if (cancelBtn) {
+                cancelBtn.disabled = false;
+                cancelBtn.textContent = 'Cancel';
+            }
+        }
+    },
+
+    accept: async (quoteId) => {
+        const shortId = Utils.extractShortId(quoteId);
+        const confirmAccept = confirm(`Are you sure you want to accept quote ${shortId}?\n\nThis action cannot be undone and will finalize the quote.`);
+        
+        if (!confirmAccept) {
+            return;
+        }
+
+        try {
+            console.log('Accepting quote:', quoteId);
+            
+            // Find the accept button to show loading state
+            const acceptBtn = document.querySelector(`button[onclick*="accept"][onclick*="${quoteId}"]`);
+            if (acceptBtn) {
+                acceptBtn.disabled = true;
+                acceptBtn.textContent = 'Accepting...';
+            }
+
+            // Call API to update quote status to accepted
+            await QuoteAPI.updateQuoteStatus(quoteId, 'accepted');
+            
+            console.log('Quote successfully accepted');
+            alert(`Quote ${shortId} has been accepted successfully.`);
+            
+            // Refresh the page to show updated status and disabled actions
+            window.location.reload();
+            
+        } catch (error) {
+            console.error('Error accepting quote:', error);
+            alert(`Error accepting quote: ${error.message}`);
+            
+            // Reset button state on error
+            const acceptBtn = document.querySelector(`button[onclick*="accept"][onclick*="${quoteId}"]`);
+            if (acceptBtn) {
+                acceptBtn.disabled = false;
+                acceptBtn.textContent = 'Accept';
+            }
+        }
+    },
+
+    // Helper method to check if a quote is cancelled
+    isQuoteCancelled: (quote) => {
+        // Check if quote has any cancelled state in its items
+        if (Array.isArray(quote.quoteItem)) {
+            return quote.quoteItem.some(item => item.state === 'cancelled');
+        }
+        return false;
+    },
+
+    // Helper method to check if a quote is accepted
+    isQuoteAccepted: (quote) => {
+        // Check if quote has any accepted state in its items
+        if (Array.isArray(quote.quoteItem)) {
+            return quote.quoteItem.some(item => item.state === 'accepted');
+        }
+        return false;
+    },
+
+    // Helper method to check if a quote is finalized (accepted or cancelled)
+    isQuoteFinalized: (quote) => {
+        return QuoteActions.isQuoteCancelled(quote) || QuoteActions.isQuoteAccepted(quote);
+    },
+
     openChat: async (quoteId) => {
         // Check if chat modal already exists
         let modal = document.getElementById('chat-modal');

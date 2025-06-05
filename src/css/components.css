@@ -44,6 +44,24 @@
     border: 1px solid #ef4444;
 }
 
+.status-approved {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+
+.status-accepted {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #10b981;
+}
+
+.status-rejected {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #ef4444;
+}
+
 .status-unknown {
     background-color: #f3f4f6;
     color: #374151;

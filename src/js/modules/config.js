@@ -15,7 +15,8 @@ export const QUOTE_API_CONFIG = {
         updateQuote: '/updateQuote',
         deleteQuote: '/deleteQuote',
         addNoteToQuote: '/addNoteToQuote',
-        addAttachmentToQuote: '/addAttachmentToQuote'
+        addAttachmentToQuote: '/addAttachmentToQuote',
+        updateQuoteStatus: '/updateQuoteStatus'
     },
     timeout: 15000, // 15 seconds
     headers: {
