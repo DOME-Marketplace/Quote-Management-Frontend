@@ -96,7 +96,7 @@ export const QuoteActions = {
         alert(`Exporting quote: ${Utils.extractShortId(quoteId)}`);
     },
 
-    openChat: (quoteId) => {
+    openChat: async (quoteId) => {
         // Check if chat modal already exists
         let modal = document.getElementById('chat-modal');
         if (!modal) {
@@ -105,7 +105,7 @@ export const QuoteActions = {
             modal.innerHTML = `
                 <div class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
                     <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-                        <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onclick="document.getElementById('chat-modal').remove()" aria-label="Close chat">&times;</button>
+                        <button class="absolute top-2 right-2 text-gray-400 hover:text-gray-700" onclick="document.getElementById('chat-modal').remove(); window.stopChatPolling && window.stopChatPolling();" aria-label="Close chat">&times;</button>
                         <h3 class="text-lg font-semibold mb-2">Chat for Quote <span id="chat-quote-id"></span></h3>
                         <div id="chat-messages" class="border rounded p-2 h-48 overflow-y-auto mb-4 bg-gray-50"></div>
                         <form id="chat-form" class="flex space-x-2">
@@ -117,24 +117,63 @@ export const QuoteActions = {
             `;
             document.body.appendChild(modal);
         }
-        // Set quote id
         document.getElementById('chat-quote-id').textContent = quoteId.slice(-8);
-        // Clear previous messages
-        document.getElementById('chat-messages').innerHTML = '';
+        const userId = sessionStorage.getItem('userId');
+        const messagesDiv = document.getElementById('chat-messages');
+
+        // Funzione per caricare i messaggi
+        async function loadMessages() {
+            try {
+                const response = await fetch(`http://localhost:8080/quoteManagement/quoteById/${encodeURIComponent(quoteId)}`);
+                if (!response.ok) throw new Error('Failed to fetch chat messages');
+                const data = await response.json();
+                const notes = Array.isArray(data.note) ? data.note : [];
+                if (notes.length === 0) {
+                    messagesDiv.innerHTML = '<div class="text-gray-400 text-center">No messages yet.</div>';
+                } else {
+                    messagesDiv.innerHTML = notes.map(note => {
+                        const isMine = note.author === userId;
+                        return `<div class="mb-2 flex ${isMine ? 'justify-end' : 'justify-start'}">
+                            <div class="max-w-xs px-3 py-2 rounded-lg text-sm ${isMine ? 'bg-blue-100 text-blue-900' : 'bg-gray-200 text-gray-800'}">
+                                <div>${note.text}</div>
+                                <div class="text-xs text-gray-400 mt-1">${note.author === userId ? 'You' : note.author}</div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                }
+            } catch (err) {
+                messagesDiv.innerHTML = '<div class="text-red-500 text-center">Error loading messages</div>';
+            }
+        }
+        // Carica subito i messaggi
+        messagesDiv.innerHTML = '<div class="text-gray-400 text-center">Loading messages...</div>';
+        await loadMessages();
+        // Polling automatico
+        if (window.stopChatPolling) window.stopChatPolling();
+        let polling = setInterval(loadMessages, 3000);
+        window.stopChatPolling = () => clearInterval(polling);
+
         // Set up form handler
         const form = document.getElementById('chat-form');
-        form.onsubmit = function(e) {
+        form.onsubmit = async function(e) {
             e.preventDefault();
             const input = document.getElementById('chat-input');
             const msg = input.value.trim();
-            if (msg) {
-                const messagesDiv = document.getElementById('chat-messages');
-                const msgElem = document.createElement('div');
-                msgElem.className = 'mb-1 text-sm';
-                msgElem.textContent = 'You: ' + msg;
-                messagesDiv.appendChild(msgElem);
+            if (msg.length === 0) return;
+            const sendBtn = form.querySelector('button[type="submit"]');
+            sendBtn.disabled = true;
+            try {
+                const url = `http://localhost:8080/quoteManagement/addNoteToQuote/${encodeURIComponent(quoteId)}?userId=${encodeURIComponent(userId)}&messageContent=${encodeURIComponent(msg)}`;
+                const response = await fetch(url, { method: 'POST' });
+                if (!response.ok) throw new Error('Failed to send message');
                 input.value = '';
-                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                // Dopo l'invio aggiorna la lista dei messaggi
+                await loadMessages();
+            } catch (err) {
+                alert('Errore durante l\'invio del messaggio');
+            } finally {
+                sendBtn.disabled = false;
             }
         };
     },
