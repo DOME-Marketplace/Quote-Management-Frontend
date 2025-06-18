@@ -212,10 +212,19 @@ export class QuoteService {
   }
 
   /**
-   * @deprecated Use updateQuoteCompletionDates instead
+   * Update quote completion date using the specific updateQuoteDate endpoint
+   * PATCH /updateQuoteDate/{id}?date={date}&dateType={dateType}
    */
-  updateQuoteDate(id: string, date: string): Observable<any> {
-    return this.updateQuoteCompletionDates(id, date);
+  updateQuoteDate(id: string, date: string, dateType: 'requested' | 'expected'): Observable<Quote> {
+    let params = new HttpParams();
+    params = params.set('date', date);
+    params = params.set('dateType', dateType);
+    
+    const encodedId = encodeURIComponent(id);
+    console.log('Updating quote date with URL:', `${this.apiUrl}/updateQuoteDate/${encodedId}`);
+    console.log('Date:', date, 'DateType:', dateType);
+    
+    return this.http.patch<Quote>(`${this.apiUrl}/updateQuoteDate/${encodedId}`, null, { params });
   }
 
   /**

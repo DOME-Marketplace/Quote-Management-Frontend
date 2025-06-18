@@ -198,9 +198,9 @@ import { AttachmentModalComponent } from '../../../../shared/components/attachme
                 </svg>
               </button>
               
-              <!-- Add Attachment (Provider only) -->
+              <!-- Add Attachment (Provider only, when quote is inProgress or approved) -->
               <button
-                *ngIf="selectedRole === 'seller'"
+                *ngIf="selectedRole === 'seller' && (getPrimaryState(quote) === 'inProgress' || getPrimaryState(quote) === 'approved')"
                 [disabled]="isActionDisabled(quote, 'addAttachment')"
                 (click)="addAttachment(quote)"
                 [class]="getIconButtonClass(quote, 'addAttachment', 'text-green-500 hover:text-green-700')"
@@ -210,15 +210,55 @@ import { AttachmentModalComponent } from '../../../../shared/components/attachme
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                 </svg>
               </button>
+
+              <!-- Add Requested Completion Date (Customer only) -->
+              <button
+                *ngIf="selectedRole === 'customer' && !quote.requestedQuoteCompletionDate"
+                [disabled]="isActionDisabled(quote, 'addRequestedDate')"
+                (click)="addRequestedDate(quote)"
+                [class]="getIconButtonClass(quote, 'addRequestedDate', 'text-indigo-500 hover:text-indigo-700')"
+                title="Add requested completion date"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </button>
+
+              <!-- Add Expected Completion Date (Provider only) -->
+              <button
+                *ngIf="selectedRole === 'seller' && !quote.expectedQuoteCompletionDate"
+                [disabled]="isActionDisabled(quote, 'addExpectedDate')"
+                (click)="addExpectedDate(quote)"
+                [class]="getIconButtonClass(quote, 'addExpectedDate', 'text-orange-500 hover:text-orange-700')"
+                title="Add expected completion date"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </button>
               
               <!-- Accept/Cancel buttons or Finalized indicator -->
               <ng-container *ngIf="!isQuoteFinalized(quote)">
-                <!-- Accept -->
+                <!-- Accept (Provider only, when quote is pending) -->
                 <button
+                  *ngIf="selectedRole === 'seller' && getPrimaryState(quote) === 'pending'"
                   [disabled]="isActionDisabled(quote, 'accept')"
                   (click)="acceptQuote(quote)"
                   [class]="getIconButtonClass(quote, 'accept', 'text-emerald-600 hover:text-emerald-700')"
-                  title="Accept quote"
+                  title="Accept quote request"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                </button>
+
+                <!-- Accept (Customer only, when quote is approved) -->
+                <button
+                  *ngIf="selectedRole === 'customer' && getPrimaryState(quote) === 'approved'"
+                  [disabled]="isActionDisabled(quote, 'acceptCustomer')"
+                  (click)="acceptQuoteCustomer(quote)"
+                  [class]="getIconButtonClass(quote, 'acceptCustomer', 'text-emerald-600 hover:text-emerald-700')"
+                  title="Accept quotation"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -327,6 +367,50 @@ import { AttachmentModalComponent } from '../../../../shared/components/attachme
       (close)="closeAttachmentModal()"
       (uploadSuccess)="onAttachmentUploaded($event)"
     ></app-attachment-modal>
+
+    <!-- Date Picker Modal -->
+    <div *ngIf="showDatePickerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+          <h3 class="text-lg font-medium text-gray-900 mb-4">
+            {{ datePickerType === 'requested' ? 'Add Requested Completion Date' : 'Add Expected Completion Date' }}
+          </h3>
+          <p class="text-sm text-gray-600 mb-4">
+            {{ datePickerType === 'requested' ? 'Select when you need this quote to be completed:' : 'Select when you expect to complete this quote:' }}
+          </p>
+          
+          <div class="mb-6">
+            <label for="completion-date" class="block text-sm font-medium text-gray-700 mb-2">
+              Completion Date
+            </label>
+            <input 
+              id="completion-date"
+              type="date" 
+              [(ngModel)]="selectedDate"
+              [min]="getTomorrowDate()"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+            />
+            <p class="text-xs text-gray-500 mt-1">Date must be in the future</p>
+          </div>
+
+          <div class="flex justify-end space-x-3">
+            <button
+              (click)="closeDatePickerModal()"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Cancel
+            </button>
+            <button
+              (click)="confirmDateUpdate()"
+              [disabled]="!selectedDate || !isDateValid()"
+              class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            >
+              Save Date
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   `,
   styles: [`
     .status-badge {
@@ -401,6 +485,12 @@ export class QuoteListComponent implements OnInit {
   showAttachmentModal = false;
   selectedAttachmentQuote: Quote | null = null;
 
+  // Date Picker Modal
+  showDatePickerModal = false;
+  selectedDateQuote: Quote | null = null;
+  datePickerType: 'requested' | 'expected' | null = null;
+  selectedDate: string = '';
+
   ngOnInit() {
     this.currentUserId = this.loginService.getUserId();
     if (this.currentUserId) {
@@ -422,6 +512,13 @@ export class QuoteListComponent implements OnInit {
     this.quoteService.getQuotesByUserAndRole(this.currentUserId, this.selectedRole).subscribe({
       next: (quotes) => {
         this.quotes = quotes;
+        
+        // Debug: Log quote states
+        console.log('Loaded quotes:', quotes.length);
+        quotes.forEach(quote => {
+          console.log(`Quote ${this.extractShortId(quote.id)}: main state = "${quote.state}", primary state = "${this.getPrimaryState(quote)}"`);
+        });
+        
         this.filterQuotesByStatus();
         this.loading = false;
       },
@@ -494,6 +591,31 @@ export class QuoteListComponent implements OnInit {
     if (index !== -1) {
       this.quotes[index] = updatedQuote;
       this.filterQuotesByStatus();
+    }
+
+    // If the current user is a provider (seller) and the quote is in progress,
+    // automatically update the status to 'approved' after successful PDF upload
+    if (this.selectedRole === 'seller' && this.getPrimaryState(updatedQuote) === 'inProgress') {
+      console.log('Provider uploaded PDF, updating quote status to approved:', updatedQuote.id);
+      
+      this.quoteService.updateQuoteStatus(updatedQuote.id!, 'approved').subscribe({
+        next: (approvedQuote) => {
+          // Update the quote again with the new status
+          const approvedIndex = this.quotes.findIndex(q => q.id === approvedQuote.id);
+          if (approvedIndex !== -1) {
+            this.quotes[approvedIndex] = approvedQuote;
+            this.filterQuotesByStatus();
+          }
+          
+          const shortId = this.extractShortId(updatedQuote.id);
+          console.log('Quote status automatically updated to approved after PDF upload');
+          this.notificationService.showSuccess(`Quote ${shortId} has been approved after PDF upload.`);
+        },
+        error: (error) => {
+          console.error('Error updating quote status to approved:', error);
+          this.notificationService.showError(`Error updating quote status: ${error.message || 'Unknown error'}`);
+        }
+      });
     }
   }
 
@@ -577,13 +699,40 @@ export class QuoteListComponent implements OnInit {
 
   acceptQuote(quote: Quote) {
     const shortId = this.extractShortId(quote.id);
-    const confirmAccept = confirm(`Are you sure you want to accept quote ${shortId}?\n\nThis action cannot be undone and will finalize the quote.`);
+    const confirmAccept = confirm(`Are you sure you want to accept this request?`);
     
     if (!confirmAccept) {
       return;
     }
 
-    console.log('Accepting quote:', quote.id);
+    console.log('Accepting quote request:', quote.id);
+    
+    this.quoteService.updateQuoteStatus(quote.id!, 'inProgress').subscribe({
+      next: (updatedQuote) => {
+        const index = this.quotes.findIndex(q => q.id === updatedQuote.id);
+        if (index !== -1) {
+          this.quotes[index] = updatedQuote;
+          this.filterQuotesByStatus();
+        }
+        console.log('Quote request successfully accepted');
+        this.notificationService.showSuccess(`Quote request ${shortId} has been accepted and is now in progress.`);
+      },
+      error: (error) => {
+        console.error('Error accepting quote request:', error);
+        this.notificationService.showError(`Error accepting quote request: ${error.message || 'Unknown error'}`);
+      }
+    });
+  }
+
+  acceptQuoteCustomer(quote: Quote) {
+    const shortId = this.extractShortId(quote.id);
+    const confirmAccept = confirm(`Are you sure you want to accept the quotation?`);
+    
+    if (!confirmAccept) {
+      return;
+    }
+
+    console.log('Customer accepting quotation:', quote.id);
     
     this.quoteService.updateQuoteStatus(quote.id!, 'accepted').subscribe({
       next: (updatedQuote) => {
@@ -592,12 +741,80 @@ export class QuoteListComponent implements OnInit {
           this.quotes[index] = updatedQuote;
           this.filterQuotesByStatus();
         }
-        console.log('Quote successfully accepted');
-        this.notificationService.showSuccess(`Quote ${shortId} has been accepted successfully.`);
+        console.log('Quotation successfully accepted by customer');
+        this.notificationService.showSuccess(`Quotation ${shortId} has been accepted successfully.`);
       },
       error: (error) => {
-        console.error('Error accepting quote:', error);
-        this.notificationService.showError(`Error accepting quote: ${error.message || 'Unknown error'}`);
+        console.error('Error accepting quotation:', error);
+        this.notificationService.showError(`Error accepting quotation: ${error.message || 'Unknown error'}`);
+      }
+    });
+  }
+
+  // Date picker methods
+  addRequestedDate(quote: Quote) {
+    this.selectedDateQuote = quote;
+    this.datePickerType = 'requested';
+    this.selectedDate = '';
+    this.showDatePickerModal = true;
+  }
+
+  addExpectedDate(quote: Quote) {
+    this.selectedDateQuote = quote;
+    this.datePickerType = 'expected';
+    this.selectedDate = '';
+    this.showDatePickerModal = true;
+  }
+
+  closeDatePickerModal() {
+    this.showDatePickerModal = false;
+    this.selectedDateQuote = null;
+    this.datePickerType = null;
+    this.selectedDate = '';
+  }
+
+  getTomorrowDate(): string {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  }
+
+  isDateValid(): boolean {
+    if (!this.selectedDate) return false;
+    const selectedDateObj = new Date(this.selectedDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return selectedDateObj > today;
+  }
+
+  confirmDateUpdate() {
+    if (!this.selectedDateQuote || !this.datePickerType || !this.selectedDate || !this.isDateValid()) {
+      return;
+    }
+
+    const shortId = this.extractShortId(this.selectedDateQuote.id);
+    const dateType = this.datePickerType;
+    
+    // Format date as DD-MM-YYYY as required by the API
+    const dateObj = new Date(this.selectedDate);
+    const formattedDate = `${dateObj.getDate().toString().padStart(2, '0')}-${(dateObj.getMonth() + 1).toString().padStart(2, '0')}-${dateObj.getFullYear()}`;
+    
+    console.log(`Setting ${dateType} completion date for quote:`, this.selectedDateQuote.id, 'Date:', formattedDate);
+    
+    this.quoteService.updateQuoteDate(this.selectedDateQuote.id!, formattedDate, dateType).subscribe({
+      next: (updatedQuote) => {
+        const index = this.quotes.findIndex(q => q.id === updatedQuote.id);
+        if (index !== -1) {
+          this.quotes[index] = updatedQuote;
+          this.filterQuotesByStatus();
+        }
+        console.log(`${dateType} completion date successfully updated`);
+        this.notificationService.showSuccess(`${dateType === 'requested' ? 'Requested' : 'Expected'} completion date for quote ${shortId} has been set successfully.`);
+        this.closeDatePickerModal();
+      },
+      error: (error) => {
+        console.error(`Error setting ${dateType} completion date:`, error);
+        this.notificationService.showError(`Error setting ${dateType} completion date: ${error.message || 'Unknown error'}`);
       }
     });
   }
@@ -637,10 +854,17 @@ export class QuoteListComponent implements OnInit {
   }
 
   getPrimaryState(quote: Quote): string {
+    // First try quoteItem state (this is where the actual state is stored)
     if (Array.isArray(quote.quoteItem) && quote.quoteItem.length > 0) {
       return quote.quoteItem[0].state || 'unknown';
     }
-    return quote.state || 'unknown';
+    
+    // Fallback to main quote state if quoteItem state is not available
+    if (quote.state) {
+      return quote.state;
+    }
+    
+    return 'unknown';
   }
 
   hasAttachment(quote: Quote): boolean {
@@ -649,11 +873,23 @@ export class QuoteListComponent implements OnInit {
   }
 
   isQuoteCancelled(quote: Quote): boolean {
-    return quote.quoteItem?.some(item => item.state === 'cancelled') || false;
+    // Check quoteItem state first (this is where the actual state is stored)
+    if (quote.quoteItem?.some(item => item.state === 'cancelled')) {
+      return true;
+    }
+    
+    // Fallback to main quote state
+    return quote.state === 'cancelled';
   }
 
   isQuoteAccepted(quote: Quote): boolean {
-    return quote.quoteItem?.some(item => item.state === 'accepted') || false;
+    // Check quoteItem state first (this is where the actual state is stored)
+    if (quote.quoteItem?.some(item => item.state === 'accepted')) {
+      return true;
+    }
+    
+    // Fallback to main quote state
+    return quote.state === 'accepted';
   }
 
   isQuoteFinalized(quote: Quote): boolean {
@@ -670,10 +906,22 @@ export class QuoteListComponent implements OnInit {
       case 'chat':
         return isCancelled; // Only disabled for cancelled quotes
       case 'addAttachment':
-      case 'accept':
       case 'cancel':
-      case 'downloadAttachment':
         return isFinalized; // Disabled for both accepted and cancelled
+      case 'downloadAttachment':
+        return isCancelled; // Only disabled for cancelled quotes, customers can download when accepted
+      case 'accept':
+        // Accept button is only for providers when quote is pending
+        // It should not be disabled by finalization since it only shows when pending
+        return false;
+      case 'acceptCustomer':
+        // Customer accept button is only for customers when quote is approved
+        // It should not be disabled by finalization since it only shows when approved
+        return false;
+      case 'addRequestedDate':
+      case 'addExpectedDate':
+        // Date picker buttons should not be disabled
+        return false;
       default:
         return false;
     }
