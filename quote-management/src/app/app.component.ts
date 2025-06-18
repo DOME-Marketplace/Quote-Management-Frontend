@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { NotificationComponent } from './shared/components/notification/notification.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterModule, NotificationComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, NotificationComponent],
   template: `
     <div class="min-h-screen bg-gray-100">
       <!-- Navigation -->

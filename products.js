@@ -80,7 +80,7 @@ function createProductCard(product) {
 
     const lastUpdate = document.createElement('p');
     lastUpdate.className = 'card-text';
-    lastUpdate.innerHTML = `<small class="text-muted">Last Update: ${new Date(product.lastUpdate).toLocaleString()}</small>`;
+            lastUpdate.innerHTML = `<small class="text-muted">Last Update: ${new Date(product.lastUpdate).toLocaleDateString('en-GB', {year: 'numeric', month: '2-digit', day: '2-digit'})}</small>`;
 
     cardBody.appendChild(title);
     cardBody.appendChild(description);

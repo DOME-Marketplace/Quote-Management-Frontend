@@ -10,10 +10,10 @@ export const Utils = {
         if (!dateString) return 'Not set';
 
         try {
-            return new Date(dateString).toLocaleDateString('en-US', {
+            return new Date(dateString).toLocaleDateString('en-GB', {
                 year: 'numeric',
-                month: 'short',
-                day: 'numeric'
+                month: '2-digit',
+                day: '2-digit'
             });
         } catch (error) {
             console.warn('Invalid date:', dateString);

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { QuoteService } from '../../../../core/services/quote.service';
+import { QuoteService } from '../../services/quote.service';
 import { NotificationService } from '../../../../shared/services/notification.service';
 import { Quote } from '../../../../shared/models/quote.model';
 import { NotificationComponent } from '../../../../shared/components/notification/notification.component';
@@ -60,7 +60,7 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
               </div>
               <div>
                 <dt class="text-sm font-medium text-gray-500">Date</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ quote.quoteDate | date:'medium' }}</dd>
+                <dd class="mt-1 text-sm text-gray-900">{{ quote.quoteDate | date:'dd/MM/yyyy' }}</dd>
               </div>
               <div>
                 <dt class="text-sm font-medium text-gray-500">Status</dt>
@@ -163,7 +163,9 @@ export class QuoteDetailsComponent implements OnInit {
   ngOnInit() {
     const quoteId = this.route.snapshot.paramMap.get('id');
     if (quoteId) {
-      this.loadQuote(quoteId);
+      // Decode the URL-encoded ID
+      const decodedId = decodeURIComponent(quoteId);
+      this.loadQuote(decodedId);
     }
   }
 
@@ -197,7 +199,7 @@ export class QuoteDetailsComponent implements OnInit {
 
   editQuote() {
     if (this.quote) {
-      this.router.navigate(['/quotes', this.quote.id, 'edit']);
+      this.router.navigate(['/quotes', encodeURIComponent(this.quote.id!), 'edit']);
     }
   }
 
@@ -209,7 +211,7 @@ export class QuoteDetailsComponent implements OnInit {
   }
 
   deleteQuote() {
-    if (!this.quote) return;
+    if (!this.quote?.id) return;
 
     this.quoteService.deleteQuote(this.quote.id).subscribe({
       next: () => {

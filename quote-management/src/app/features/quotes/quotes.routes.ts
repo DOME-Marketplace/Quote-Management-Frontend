@@ -9,10 +9,6 @@ export const quotesRoutes: Routes = [
     component: QuoteListComponent
   },
   {
-    path: ':id',
-    component: QuoteDetailsComponent
-  },
-  {
     path: 'new',
     component: QuoteFormComponent
   },

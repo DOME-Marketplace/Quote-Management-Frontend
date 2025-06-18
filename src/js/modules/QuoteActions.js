@@ -66,7 +66,7 @@ export const QuoteActions = {
                 <div><b>ID:</b> ${data.id}</div>
                 <div><b>State:</b> ${itemState}</div>
                 <div><b>Description:</b> ${data.description || '-'}</div>
-                <div><b>Date:</b> ${data.quoteDate ? new Date(data.quoteDate).toLocaleString() : '-'}</div>
+                <div><b>Date:</b> ${data.quoteDate ? new Date(data.quoteDate).toLocaleDateString('en-GB', {year: 'numeric', month: '2-digit', day: '2-digit'}) : '-'}</div>
                 <div><b>Items:</b> ${(data.quoteItem && data.quoteItem.length) ? data.quoteItem.length : 0}</div>
                 ${relatedPartyHtml}
                 <div><b>Attachment:</b> ${hasAttachment}</div>

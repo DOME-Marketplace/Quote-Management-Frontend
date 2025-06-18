@@ -1,0 +1,17 @@
+{
+  "/api/productOffering/*": {
+    "target": "https://an-dhub-sbx.dome-project.eu",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/api/productOffering": "/tmf-api/productCatalogManagement/v4/productOffering"
+    }
+  },
+  "/quoteManagement/*": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+} 

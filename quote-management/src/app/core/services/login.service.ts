@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class LoginService {
-  private readonly USER_KEY = 'loggedOnUserId';
+  private readonly USER_KEY = 'userId';
 
   setUserId(userId: string): void {
-    localStorage.setItem(this.USER_KEY, userId);
+    sessionStorage.setItem(this.USER_KEY, userId);
   }
 
   getUserId(): string | null {
-    return localStorage.getItem(this.USER_KEY);
+    return sessionStorage.getItem(this.USER_KEY);
   }
 
   isLoggedIn(): boolean {
@@ -17,6 +17,6 @@ export class LoginService {
   }
 
   logout(): void {
-    localStorage.removeItem(this.USER_KEY);
+    sessionStorage.removeItem(this.USER_KEY);
   }
 } 

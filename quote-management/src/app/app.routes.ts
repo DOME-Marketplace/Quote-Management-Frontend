@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from './core/guards/auth.guard';
+import { authGuard } from './core/guards/auth.guard';
 
 export const appRoutes: Routes = [
   {
     path: '',
-    redirectTo: 'quotes',
+    redirectTo: 'login',
     pathMatch: 'full'
   },
   {
@@ -12,17 +12,17 @@ export const appRoutes: Routes = [
     loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule)
   },
   {
-    path: 'quotes',
-    loadChildren: () => import('./features/quotes/quotes.module').then(m => m.QuotesModule),
-    canActivate: [AuthGuard]
-  },
-  {
     path: 'products',
     loadChildren: () => import('./features/products/products.module').then(m => m.ProductsModule),
-    canActivate: [AuthGuard]
+    canActivate: [authGuard]
+  },
+  {
+    path: 'quotes',
+    loadChildren: () => import('./features/quotes/quotes.module').then(m => m.QuotesModule),
+    canActivate: [authGuard]
   },
   {
     path: '**',
-    redirectTo: 'quotes'
+    redirectTo: 'login'
   }
 ]; 

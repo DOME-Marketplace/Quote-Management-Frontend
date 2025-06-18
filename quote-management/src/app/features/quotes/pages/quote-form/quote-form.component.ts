@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { QuoteService } from '../../../../core/services/quote.service';
+import { QuoteService } from '../../services/quote.service';
 import { NotificationService } from '../../../../shared/services/notification.service';
 import { Quote } from '../../../../shared/models/quote.model';
 import { NotificationComponent } from '../../../../shared/components/notification/notification.component';
@@ -214,7 +214,9 @@ export class QuoteFormComponent implements OnInit {
     const quoteId = this.route.snapshot.paramMap.get('id');
     if (quoteId) {
       this.isEditMode = true;
-      this.loadQuote(quoteId);
+      // Decode the URL-encoded ID
+      const decodedId = decodeURIComponent(quoteId);
+      this.loadQuote(decodedId);
     } else {
       // Add default items for new quote
       this.addRelatedParty();
@@ -319,8 +321,8 @@ export class QuoteFormComponent implements OnInit {
 
     const quoteId = this.route.snapshot.paramMap.get('id');
     const operation = quoteId
-      ? this.quoteService.updateQuote(quoteId, quote)
-      : this.quoteService.createQuote(quote);
+      ? this.quoteService.updateQuote(decodeURIComponent(quoteId), quote)
+      : this.quoteService.createQuote(quote as any);
 
     operation.subscribe({
       next: () => {
