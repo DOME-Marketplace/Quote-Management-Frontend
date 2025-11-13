@@ -31,7 +31,7 @@ export class ProductService {
    * 2. Get productSpecification using the ID from step 1
    * 3. Extract providerId from relatedParty
    */
-  getProductWithProvider(fields?: string, offset: number = 210, limit: number = 1): Observable<ProductWithProvider[]> {
+  getProductWithProvider(fields?: string, offset: number = 0, limit: number = 7): Observable<ProductWithProvider[]> {
     return this.getProductOfferings(fields, offset, limit).pipe(
       switchMap((offerings: any[]) => {
         if (!offerings || offerings.length === 0) {
@@ -107,7 +107,7 @@ export class ProductService {
   /**
    * Get productOfferings (step 1)
    */
-  private getProductOfferings(fields?: string, offset: number = 210, limit: number = 1): Observable<any[]> {
+  private getProductOfferings(fields?: string, offset: number = 0, limit: number = 5): Observable<any[]> {
     let params = new HttpParams();
     if (fields) params = params.set('fields', fields);
     params = params.set('offset', offset.toString());
@@ -156,7 +156,7 @@ export class ProductService {
    * List or find ProductOffering objects (legacy method, now calls getProductWithProvider)
    * GET /productOffering
    */
-  listProductSpecifications(fields?: string, offset: number = 210, limit: number = 1): Observable<ProductSpecification[]> {
+  listProductSpecifications(fields?: string, offset: number = 0, limit: number = 5): Observable<ProductSpecification[]> {
     return this.getProductWithProvider(fields, offset, limit);
   }
 
@@ -358,7 +358,7 @@ export class ProductService {
   /**
    * @deprecated Use getProductWithProvider instead
    */
-  getProductSpecifications(offset: number = 0, limit: number = 10): Observable<any> {
+  getProductSpecifications(offset: number = 0, limit: number = 5): Observable<any> {
     return this.getProductWithProvider(undefined, offset, limit);
   }
 

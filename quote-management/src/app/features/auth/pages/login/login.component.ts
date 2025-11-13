@@ -16,25 +16,24 @@ import { LoginService } from '../../../../core/services/login.service';
         <div class="text-center mb-4">
           <p class="text-sm text-gray-600 mb-2">Click to use:</p>
           <p class="text-sm mb-2">
-            <span class="font-medium">Customer ID:</span> 
             <button 
               type="button"
-              (click)="selectUserId('urn:ngsi-ld:individual:ab450747-7204-448b-8a8c-77b88f46e81f')"
+              (click)="selectUserId('urn:ngsi-ld:individual:e10c11b5-8758-4a18-8f9f-23434f69d844')"
               class="text-blue-600 hover:text-blue-800 underline cursor-pointer ml-1"
               title="Click to use this ID"
             >
-              urn:ngsi-ld:individual:ab450747-7204-448b-8a8c-77b88f46e81f
+            urn:ngsi-ld:individual:e10c11b5-8758-4a18-8f9f-23434f69d844
             </button>
           </p>
           <p class="text-sm">
             <span class="font-medium">Provider ID:</span> 
             <button 
               type="button"
-              (click)="selectUserId('urn:ngsi-ld:organization:38817de3-8c3e-4141-a344-86ffd915cc3b')"
+              (click)="selectUserId('urn:ngsi-ld:organization:cb1883c0-6b1a-4e77-9987-90af8a06f933')"
               class="text-blue-600 hover:text-blue-800 underline cursor-pointer ml-1"
               title="Click to use this ID"
             >
-              urn:ngsi-ld:organization:38817de3-8c3e-4141-a344-86ffd915cc3b
+              urn:ngsi-ld:organization:cb1883c0-6b1a-4e77-9987-90af8a06f933
             </button>
           </p>
         </div>
