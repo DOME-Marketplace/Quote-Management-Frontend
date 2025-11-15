@@ -19,8 +19,9 @@ export interface ProductWithProvider extends ProductSpecification {
 })
 export class ProductService {
   private http = inject(HttpClient);
-  private apiUrl = environment.productApiUrl;
-  private productSpecApiUrl = 'https://an-dhub-sbx.dome-project.eu/tmf-api/productCatalogManagement/v4/productSpecification';
+  // Using Angular dev server proxy (configured in proxy.conf.json) to avoid CORS issues
+  private apiUrl = '/api/productOffering';
+  private productSpecApiUrl = '/api/productSpecification';
 
   // TMF 620 Product Catalog Management API methods
 
@@ -113,18 +114,11 @@ export class ProductService {
     params = params.set('offset', offset.toString());
     params = params.set('limit', limit.toString());
 
-    const targetUrl = `${this.apiUrl}${params.toString() ? '?' + params.toString() : ''}`;
-    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl);
+    const url = `${this.apiUrl}${params.toString() ? '?' + params.toString() : ''}`;
     
-    return this.http.get<any>(proxyUrl).pipe(
-      map(response => {
-        try {
-          const data = JSON.parse(response.contents);
-          return Array.isArray(data) ? data : [];
-        } catch (error) {
-          console.error('Error parsing product offerings:', error);
-          return [];
-        }
+    return this.http.get<any[]>(url).pipe(
+      map(data => {
+        return Array.isArray(data) ? data : [];
       }),
       catchError((error) => {
         console.warn('Product offering API failed:', error);
@@ -137,19 +131,9 @@ export class ProductService {
    * Get productSpecification by ID (step 2)
    */
   private getProductSpecificationById(id: string): Observable<any> {
-    const targetUrl = `${this.productSpecApiUrl}/${id}`;
-    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl);
+    const url = `${this.productSpecApiUrl}/${id}`;
     
-    return this.http.get<any>(proxyUrl).pipe(
-      map(response => {
-        try {
-          return JSON.parse(response.contents);
-        } catch (error) {
-          console.error('Error parsing product specification:', error);
-          throw error;
-        }
-      })
-    );
+    return this.http.get<any>(url);
   }
 
   /**
@@ -236,19 +220,9 @@ export class ProductService {
     let params = new HttpParams();
     if (fields) params = params.set('fields', fields);
 
-    const targetUrl = `${this.apiUrl}/${id}${params.toString() ? '?' + params.toString() : ''}`;
-    const proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl);
+    const url = `${this.apiUrl}/${id}${params.toString() ? '?' + params.toString() : ''}`;
     
-    return this.http.get<any>(proxyUrl).pipe(
-      map(response => {
-        try {
-          return JSON.parse(response.contents);
-        } catch (error) {
-          console.error('Error parsing product offering:', error);
-          const mockSpecs = this.getMockProductSpecifications();
-          return mockSpecs.find(spec => spec.id === id) || mockSpecs[0];
-        }
-      }),
+    return this.http.get<ProductSpecification>(url).pipe(
       catchError(() => {
         // Return mock data if external API fails
         const mockSpecs = this.getMockProductSpecifications();

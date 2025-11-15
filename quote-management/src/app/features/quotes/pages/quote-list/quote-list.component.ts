@@ -121,11 +121,13 @@ import { AttachmentModalComponent } from '../../../../shared/components/attachme
         <!-- Quotes Header -->
         <div *ngIf="filteredQuotes.length > 0" class="bg-gray-50 px-6 py-3">
           <div class="grid grid-cols-12 gap-4 text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <div class="col-span-1">QUOTE DETAILS</div>
             <div class="col-span-2">ORDER ID</div>
             <div class="col-span-1">STATUS</div>
             <div class="col-span-2">REQUESTED DATE</div>
-            <div class="col-span-3">EXPECTED DATE</div>
-            <div class="col-span-4">ACTIONS</div>
+            <div class="col-span-2">EXPECTED DATE</div>
+            <div class="col-span-2">ATTACHMENTS</div>
+            <div class="col-span-2">ACTIONS</div>
           </div>
         </div>
         
@@ -136,9 +138,24 @@ import { AttachmentModalComponent } from '../../../../shared/components/attachme
                [class.hover:bg-gray-50]="!isQuoteFinalized(quote)"
                [attr.data-quote-id]="quote.id">
             
+            <!-- Quote Details (Eye Icon) -->
+            <div class="col-span-1">
+              <button
+                [disabled]="isActionDisabled(quote, 'viewDetails')"
+                (click)="viewDetails(quote)"
+                [class]="getIconButtonClass(quote, 'viewDetails', 'text-gray-600 hover:text-gray-900')"
+                title="View details"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
+            </div>
+            
             <!-- Quote ID -->
             <div class="col-span-2 text-sm font-medium text-gray-900">
-              Quote {{ extractShortId(quote.id) }}
+              {{ extractShortId(quote.id) }}
             </div>
             
             <!-- Status -->
@@ -149,30 +166,118 @@ import { AttachmentModalComponent } from '../../../../shared/components/attachme
               </span>
             </div>
             
-            <!-- Requested Date -->
-            <div class="col-span-2 text-sm text-gray-600">
-              {{ quote.requestedQuoteCompletionDate | date:'dd/MM/yyyy' }}
+            <!-- Requested Date with inline edit -->
+            <div class="col-span-2 text-sm">
+              <!-- Show requested date if exists (both roles can see) -->
+              <div *ngIf="quote.requestedQuoteCompletionDate" class="flex items-center space-x-1">
+                <span class="text-gray-900">{{ quote.requestedQuoteCompletionDate | date:'dd/MM/yyyy' }}</span>
+                <!-- Only customers can edit -->
+                <button
+                  *ngIf="selectedRole === 'customer'"
+                  [disabled]="isActionDisabled(quote, 'addRequestedDate')"
+                  (click)="addRequestedDate(quote)"
+                  class="text-blue-500 hover:text-blue-700 disabled:text-gray-300"
+                  title="Edit requested date"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </button>
+              </div>
+              <!-- Only customers can add if doesn't exist -->
+              <button
+                *ngIf="!quote.requestedQuoteCompletionDate && selectedRole === 'customer'"
+                [disabled]="isActionDisabled(quote, 'addRequestedDate')"
+                (click)="addRequestedDate(quote)"
+                class="flex items-center space-x-1 text-blue-500 hover:text-blue-700 disabled:text-gray-300"
+                title="Add requested date"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span class="text-xs">Add date</span>
+              </button>
             </div>
             
-            <!-- Expected Date -->
-            <div class="col-span-3 text-sm text-gray-600">
-              {{ quote.expectedQuoteCompletionDate | date:'dd/MM/yyyy' }}
+            <!-- Expected Date with inline edit -->
+            <div class="col-span-2 text-sm">
+              <!-- Show expected date if exists (both roles can see) -->
+              <div *ngIf="quote.expectedQuoteCompletionDate" class="flex items-center space-x-1">
+                <span class="text-gray-900">{{ quote.expectedQuoteCompletionDate | date:'dd/MM/yyyy' }}</span>
+                <!-- Only providers can edit -->
+                <button
+                  *ngIf="selectedRole === 'seller'"
+                  [disabled]="isActionDisabled(quote, 'addExpectedDate')"
+                  (click)="addExpectedDate(quote)"
+                  class="text-blue-500 hover:text-blue-700 disabled:text-gray-300"
+                  title="Edit expected date"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </button>
+              </div>
+              <!-- Only providers can add if doesn't exist -->
+              <button
+                *ngIf="!quote.expectedQuoteCompletionDate && selectedRole === 'seller'"
+                [disabled]="isActionDisabled(quote, 'addExpectedDate')"
+                (click)="addExpectedDate(quote)"
+                class="flex items-center space-x-1 text-blue-500 hover:text-blue-700 disabled:text-gray-300"
+                title="Add expected date"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span class="text-xs">Add date</span>
+              </button>
+            </div>
+            
+            <!-- Attachments -->
+            <div class="col-span-2 text-sm">
+              <!-- Show attachment if exists (both roles can see) -->
+              <div *ngIf="hasAttachment(quote)" class="flex items-center space-x-1">
+                <button
+                  [disabled]="isActionDisabled(quote, 'downloadAttachment')"
+                  (click)="downloadAttachment(quote)"
+                  class="flex items-center space-x-1 text-purple-600 hover:text-purple-800 disabled:text-gray-300"
+                  title="Download attachment"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                  </svg>
+                  <span class="text-xs truncate max-w-[100px]">{{ getAttachmentName(quote) }}</span>
+                </button>
+                <!-- Only providers can upload/replace when attachment exists -->
+                <button
+                  *ngIf="selectedRole === 'seller' && (getPrimaryState(quote) === 'inProgress' || getPrimaryState(quote) === 'approved')"
+                  [disabled]="isActionDisabled(quote, 'addAttachment')"
+                  (click)="addAttachment(quote)"
+                  class="text-blue-500 hover:text-blue-700 disabled:text-gray-300"
+                  title="Upload new attachment"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </button>
+              </div>
+              
+              <!-- Add attachment button (Provider only, when no attachment) -->
+              <button
+                *ngIf="!hasAttachment(quote) && selectedRole === 'seller' && (getPrimaryState(quote) === 'inProgress' || getPrimaryState(quote) === 'approved')"
+                [disabled]="isActionDisabled(quote, 'addAttachment')"
+                (click)="addAttachment(quote)"
+                class="flex items-center space-x-1 text-green-500 hover:text-green-700 disabled:text-gray-300"
+                title="Add attachment"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span class="text-xs">Add file</span>
+              </button>
             </div>
             
             <!-- Actions -->
-            <div class="col-span-4 flex flex-wrap gap-1">
-              <!-- View Details -->
-              <button
-                [disabled]="isActionDisabled(quote, 'viewDetails')"
-                (click)="viewDetails(quote)"
-                [class]="getButtonClass(quote, 'viewDetails')"
-                [title]="getActionTitle(quote, 'viewDetails')"
-              >
-                Details
-              </button>
-              
-
-              
+            <div class="col-span-2 flex flex-wrap gap-1">
               <!-- Chat -->
               <button
                 [disabled]="isActionDisabled(quote, 'chat')"
@@ -182,58 +287,6 @@ import { AttachmentModalComponent } from '../../../../shared/components/attachme
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.77 9.77 0 01-4-.8L3 21l1.8-4A7.96 7.96 0 013 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </button>
-              
-              <!-- Download Attachment -->
-              <button
-                *ngIf="hasAttachment(quote)"
-                [disabled]="isActionDisabled(quote, 'downloadAttachment')"
-                (click)="downloadAttachment(quote)"
-                [class]="getIconButtonClass(quote, 'downloadAttachment', 'text-purple-500 hover:text-purple-700')"
-                title="Download attachment"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </button>
-              
-              <!-- Add Attachment (Provider only, when quote is inProgress or approved) -->
-              <button
-                *ngIf="selectedRole === 'seller' && (getPrimaryState(quote) === 'inProgress' || getPrimaryState(quote) === 'approved')"
-                [disabled]="isActionDisabled(quote, 'addAttachment')"
-                (click)="addAttachment(quote)"
-                [class]="getIconButtonClass(quote, 'addAttachment', 'text-green-500 hover:text-green-700')"
-                title="Add attachment"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                </svg>
-              </button>
-
-              <!-- Add Requested Completion Date (Customer only) -->
-              <button
-                *ngIf="selectedRole === 'customer' && !quote.requestedQuoteCompletionDate"
-                [disabled]="isActionDisabled(quote, 'addRequestedDate')"
-                (click)="addRequestedDate(quote)"
-                [class]="getIconButtonClass(quote, 'addRequestedDate', 'text-indigo-500 hover:text-indigo-700')"
-                title="Add requested completion date"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </button>
-
-              <!-- Add Expected Completion Date (Provider only) -->
-              <button
-                *ngIf="selectedRole === 'seller' && !quote.expectedQuoteCompletionDate"
-                [disabled]="isActionDisabled(quote, 'addExpectedDate')"
-                (click)="addExpectedDate(quote)"
-                [class]="getIconButtonClass(quote, 'addExpectedDate', 'text-orange-500 hover:text-orange-700')"
-                title="Add expected completion date"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </button>
               
@@ -438,7 +491,7 @@ import { AttachmentModalComponent } from '../../../../shared/components/attachme
     }
     
     .status-accepted {
-      @apply bg-emerald-100 text-emerald-800;
+      @apply bg-teal-100 text-teal-800;
     }
     
     .status-unknown {
@@ -514,10 +567,10 @@ export class QuoteListComponent implements OnInit {
         this.quotes = quotes;
         
         // Debug: Log quote states
-        console.log('Loaded quotes:', quotes.length);
-        quotes.forEach(quote => {
-          console.log(`Quote ${this.extractShortId(quote.id)}: main state = "${quote.state}", primary state = "${this.getPrimaryState(quote)}"`);
-        });
+        // console.log('Loaded quotes:', quotes.length);
+        // quotes.forEach(quote => {
+        //   console.log(`Quote ${this.extractShortId(quote.id)}: main state = "${quote.state}", primary state = "${this.getPrimaryState(quote)}"`);
+        // });
         
         this.filterQuotesByStatus();
         this.loading = false;
@@ -870,6 +923,20 @@ export class QuoteListComponent implements OnInit {
   hasAttachment(quote: Quote): boolean {
     return Array.isArray(quote.quoteItem) && 
            quote.quoteItem.some(qi => qi.attachment && qi.attachment.length > 0);
+  }
+
+  getAttachmentName(quote: Quote): string {
+    if (!Array.isArray(quote.quoteItem)) {
+      return '';
+    }
+    
+    for (const item of quote.quoteItem) {
+      if (item.attachment && item.attachment.length > 0) {
+        return item.attachment[0].name || 'attachment.pdf';
+      }
+    }
+    
+    return '';
   }
 
   isQuoteCancelled(quote: Quote): boolean {
