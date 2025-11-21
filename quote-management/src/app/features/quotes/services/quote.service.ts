@@ -27,8 +27,8 @@ export class QuoteService {
    * POST /quoteManagement/createQuote
    */
   createQuoteFromRequest(requestData: {
-    customerMessage: string;
-    customerIdRef: string;
+    buyerMessage: string;
+    buyerIdRef: string;
     providerIdRef: string;
     productOfferingId: string;
   }): Observable<any> {
@@ -145,10 +145,10 @@ export class QuoteService {
    * Get quotes by user with role filtering
    * GET /quoteByUser/{userId}?role={role}
    */
-  getQuotesByUserAndRole(userId: string, role: 'customer' | 'seller'): Observable<Quote[]> {
+  getQuotesByUserAndRole(userId: string, role: 'buyer' | 'seller'): Observable<Quote[]> {
     let params = new HttpParams();
-    // API expects 'Customer' or 'Seller' (capitalized)
-    const apiRole = role === 'customer' ? 'Customer' : 'Seller';
+    // API expects 'Buyer' or 'Seller' (capitalized)
+    const apiRole = role === 'buyer' ? 'Buyer' : 'Seller';
     params = params.set('role', apiRole);
     
     const encodedUserId = encodeURIComponent(userId);

@@ -189,7 +189,7 @@ import { LoginService } from '../../../../core/services/login.service';
     <app-quote-request-modal
       *ngIf="showQuoteModal"
       [product]="productForQuote"
-      [customerId]="customerId"
+      [buyerId]="buyerId"
       [isOpen]="showQuoteModal"
       (closeModal)="closeQuoteModal()"
       (submitRequest)="onQuoteRequest($event)"
@@ -219,18 +219,18 @@ export class ProductListComponent implements OnInit {
   // Quote modal properties
   showQuoteModal = false;
   productForQuote: ProductWithProvider | null = null;
-  customerId: string = '';
+  buyerId: string = '';
 
   ngOnInit() {
     this.loadProducts();
-    this.loadCustomerId();
+    this.loadBuyerId();
   }
 
-  private loadCustomerId() {
-    // Get customer ID from LoginService (stored after login)
-    this.customerId = this.loginService.getUserId() || '';
-    if (!this.customerId) {
-      console.warn('No customer ID found in session. User may need to log in.');
+  private loadBuyerId() {
+    // Get buyer ID from LoginService (stored after login)
+    this.buyerId = this.loginService.getUserId() || '';
+    if (!this.buyerId) {
+      console.warn('No buyer ID found in session. User may need to log in.');
     }
   }
 

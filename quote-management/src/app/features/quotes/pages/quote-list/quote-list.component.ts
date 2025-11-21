@@ -43,14 +43,14 @@ import { AttachmentModalComponent } from '../../../../shared/components/attachme
       <div class="mb-6">
         <div class="flex space-x-1 bg-gray-100 p-1 rounded-lg">
           <button
-            (click)="selectRole('customer')"
-            [class]="getRoleTabClass('customer')"
+            (click)="selectRole('buyer')"
+            [class]="getRoleTabClass('buyer')"
             class="flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors"
           >
             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
-            As Customer
+            As Buyer
           </button>
           <button
             (click)="selectRole('seller')"
@@ -170,9 +170,9 @@ import { AttachmentModalComponent } from '../../../../shared/components/attachme
               <!-- Show requested date if exists (both roles can see) -->
               <div *ngIf="quote.requestedQuoteCompletionDate" class="flex items-center space-x-1">
                 <span class="text-gray-900">{{ quote.requestedQuoteCompletionDate | date:'dd/MM/yyyy' }}</span>
-                <!-- Only customers can edit -->
+                <!-- Only buyers can edit -->
                 <button
-                  *ngIf="selectedRole === 'customer'"
+                  *ngIf="selectedRole === 'buyer'"
                   [disabled]="isActionDisabled(quote, 'addRequestedDate')"
                   (click)="addRequestedDate(quote)"
                   class="text-blue-500 hover:text-blue-700 disabled:text-gray-300"
@@ -183,9 +183,9 @@ import { AttachmentModalComponent } from '../../../../shared/components/attachme
                   </svg>
                 </button>
               </div>
-              <!-- Only customers can add if doesn't exist -->
+              <!-- Only buyers can add if doesn't exist -->
               <button
-                *ngIf="!quote.requestedQuoteCompletionDate && selectedRole === 'customer'"
+                *ngIf="!quote.requestedQuoteCompletionDate && selectedRole === 'buyer'"
                 [disabled]="isActionDisabled(quote, 'addRequestedDate')"
                 (click)="addRequestedDate(quote)"
                 class="flex items-center space-x-1 text-blue-500 hover:text-blue-700 disabled:text-gray-300"
@@ -304,12 +304,12 @@ import { AttachmentModalComponent } from '../../../../shared/components/attachme
                   </svg>
                 </button>
 
-                <!-- Accept (Customer only, when quote is approved) -->
+                <!-- Accept (Buyer only, when quote is approved) -->
                 <button
-                  *ngIf="selectedRole === 'customer' && getPrimaryState(quote) === 'approved'"
-                  [disabled]="isActionDisabled(quote, 'acceptCustomer')"
-                  (click)="acceptQuoteCustomer(quote)"
-                  [class]="getIconButtonClass(quote, 'acceptCustomer', 'text-emerald-600 hover:text-emerald-700')"
+                  *ngIf="selectedRole === 'buyer' && getPrimaryState(quote) === 'approved'"
+                  [disabled]="isActionDisabled(quote, 'acceptBuyer')"
+                  (click)="acceptQuoteBuyer(quote)"
+                  [class]="getIconButtonClass(quote, 'acceptBuyer', 'text-emerald-600 hover:text-emerald-700')"
                   title="Accept quotation"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -519,7 +519,7 @@ export class QuoteListComponent implements OnInit {
   availableStates: QuoteStateType[] = ['pending', 'inProgress', 'approved', 'rejected', 'cancelled', 'accepted'];
 
   // Role management
-  selectedRole: 'customer' | 'seller' = 'customer';
+  selectedRole: 'buyer' | 'seller' = 'buyer';
   currentUserId: string | null = null;
 
   // Filtering
@@ -586,12 +586,12 @@ export class QuoteListComponent implements OnInit {
     this.loadQuotes();
   }
 
-  selectRole(role: 'customer' | 'seller') {
+  selectRole(role: 'buyer' | 'seller') {
     this.selectedRole = role;
     this.loadQuotes();
   }
 
-  getRoleTabClass(role: 'customer' | 'seller'): string {
+  getRoleTabClass(role: 'buyer' | 'seller'): string {
     return this.selectedRole === role
       ? 'bg-white text-indigo-600 shadow-sm'
       : 'text-gray-500 hover:text-gray-700';
@@ -776,7 +776,7 @@ export class QuoteListComponent implements OnInit {
     });
   }
 
-  acceptQuoteCustomer(quote: Quote) {
+  acceptQuoteBuyer(quote: Quote) {
     const shortId = this.extractShortId(quote.id);
     const confirmAccept = confirm(`Are you sure you want to accept the quotation?`);
     
@@ -784,7 +784,7 @@ export class QuoteListComponent implements OnInit {
       return;
     }
 
-    console.log('Customer accepting quotation:', quote.id);
+    console.log('Buyer accepting quotation:', quote.id);
     
     this.quoteService.updateQuoteStatus(quote.id!, 'accepted').subscribe({
       next: (updatedQuote) => {
@@ -793,7 +793,7 @@ export class QuoteListComponent implements OnInit {
           this.quotes[index] = updatedQuote;
           this.filterQuotesByStatus();
         }
-        console.log('Quotation successfully accepted by customer');
+        console.log('Quotation successfully accepted by buyer');
         this.notificationService.showSuccess(`Quotation ${shortId} has been accepted successfully.`);
       },
       error: (error) => {
@@ -975,13 +975,13 @@ export class QuoteListComponent implements OnInit {
       case 'cancel':
         return isFinalized; // Disabled for both accepted and cancelled
       case 'downloadAttachment':
-        return isCancelled; // Only disabled for cancelled quotes, customers can download when accepted
+        return isCancelled; // Only disabled for cancelled quotes, buyers can download when accepted
       case 'accept':
         // Accept button is only for providers when quote is pending
         // It should not be disabled by finalization since it only shows when pending
         return false;
-      case 'acceptCustomer':
-        // Customer accept button is only for customers when quote is approved
+      case 'acceptBuyer':
+        // Buyer accept button is only for buyers when quote is approved
         // It should not be disabled by finalization since it only shows when approved
         return false;
       case 'addRequestedDate':

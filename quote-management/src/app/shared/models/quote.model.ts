@@ -250,7 +250,7 @@ export interface ProductRefOrValue {
   href?: string;
   description?: string;
   isBundle?: boolean;
-  isCustomerVisible?: boolean;
+  isBuyerVisible?: boolean;
   name?: string;
   orderDate?: string;
   productSerialNumber?: string;
