@@ -27,8 +27,8 @@ export class QuoteService {
    * POST /quoteManagement/createQuote
    */
   createQuoteFromRequest(requestData: {
-    buyerMessage: string;
-    buyerIdRef: string;
+    customerMessage: string;
+    customerIdRef: string;
     providerIdRef: string;
     productOfferingId: string;
   }): Observable<any> {

@@ -6,8 +6,8 @@ import { ProductWithProvider } from '../../../features/products/services/product
 import { QuoteService } from '../../../features/quotes/services/quote.service';
 
 export interface QuoteRequestData {
-  buyerMessage: string;
-  buyerIdRef: string;
+  customerMessage: string;
+  customerIdRef: string;
   providerIdRef: string;
   productOfferingId: string;
 }
@@ -57,20 +57,20 @@ export interface QuoteRequestData {
 
               <!-- Quote Request Form -->
               <div class="space-y-4">
-                <!-- Buyer Message -->
+                <!-- Customer Message -->
                 <div>
-                  <label for="buyerMessage" class="block text-sm font-medium text-gray-700 mb-2">
+                  <label for="customerMessage" class="block text-sm font-medium text-gray-700 mb-2">
                     Message / Requirements *
                   </label>
                   <textarea 
-                    id="buyerMessage" 
-                    formControlName="buyerMessage"
+                    id="customerMessage" 
+                    formControlName="customerMessage"
                     rows="6" 
                     class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical"
-                    [class.border-red-300]="isFieldInvalid('buyerMessage')"
+                    [class.border-red-300]="isFieldInvalid('customerMessage')"
                     placeholder="Please describe your requirements or any specific questions about this product..."
                   ></textarea>
-                  @if (isFieldInvalid('buyerMessage')) {
+                  @if (isFieldInvalid('customerMessage')) {
                     <p class="text-red-500 text-xs mt-1">Message is required</p>
                   }
                   <p class="text-xs text-gray-500 mt-1">
@@ -262,7 +262,7 @@ export interface QuoteRequestData {
 })
 export class QuoteRequestModalComponent {
   @Input() product: ProductWithProvider | null = null;
-  @Input() buyerId: string = '';
+  @Input() customerId: string = '';
   @Input() isOpen = false;
   @Output() closeModal = new EventEmitter<void>();
   @Output() submitRequest = new EventEmitter<QuoteRequestData>();
@@ -290,7 +290,7 @@ export class QuoteRequestModalComponent {
 
   constructor() {
     this.quoteForm = this.fb.group({
-      buyerMessage: ['', [Validators.required, Validators.minLength(10)]],
+      customerMessage: ['', [Validators.required, Validators.minLength(10)]],
       completionDate: ['', Validators.required]
     });
   }
@@ -312,7 +312,7 @@ export class QuoteRequestModalComponent {
 
   onClose(): void {
     this.quoteForm.reset({
-      buyerMessage: '',
+      customerMessage: '',
       completionDate: ''
     });
     this.isSubmitting = false;
@@ -327,21 +327,21 @@ export class QuoteRequestModalComponent {
   }
 
   onSubmit(): void {
-    // Only validate buyerMessage for step 1
-    const messageControl = this.quoteForm.get('buyerMessage');
-    if (messageControl?.valid && this.product && this.buyerId && !this.isSubmitting) {
+    // Only validate customerMessage for step 1
+    const messageControl = this.quoteForm.get('customerMessage');
+    if (messageControl?.valid && this.product && this.customerId && !this.isSubmitting) {
       this.isSubmitting = true;
       
       const formValue = this.quoteForm.value;
       const requestData: QuoteRequestData = {
-        buyerMessage: formValue.buyerMessage,
-        buyerIdRef: this.buyerId,
+        customerMessage: formValue.customerMessage,
+        customerIdRef: this.customerId,
         providerIdRef: this.product.providerId || '',
         productOfferingId: this.product.productOfferingId || this.product.id || ''
       };
 
       console.log('Submitting quote request with data:', requestData);
-      console.log('Buyer ID:', this.buyerId);
+      console.log('Customer ID:', this.customerId);
       console.log('Product:', this.product);
       console.log('Provider ID from product:', this.product.providerId);
 
@@ -367,12 +367,12 @@ export class QuoteRequestModalComponent {
         }
       });
     } else {
-      // Mark buyerMessage as touched to show validation errors
+      // Mark customerMessage as touched to show validation errors
       messageControl?.markAsTouched();
       
-      // Show validation message if buyerId is missing
-      if (!this.buyerId) {
-        alert('Buyer ID is required. Please log in first.');
+      // Show validation message if customerId is missing
+      if (!this.customerId) {
+        alert('Customer ID is required. Please log in first.');
       }
     }
   }

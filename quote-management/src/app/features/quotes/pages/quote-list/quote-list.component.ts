@@ -307,9 +307,9 @@ import { AttachmentModalComponent } from '../../../../shared/components/attachme
                 <!-- Accept (Buyer only, when quote is approved) -->
                 <button
                   *ngIf="selectedRole === 'buyer' && getPrimaryState(quote) === 'approved'"
-                  [disabled]="isActionDisabled(quote, 'acceptBuyer')"
-                  (click)="acceptQuoteBuyer(quote)"
-                  [class]="getIconButtonClass(quote, 'acceptBuyer', 'text-emerald-600 hover:text-emerald-700')"
+                  [disabled]="isActionDisabled(quote, 'acceptCustomer')"
+                  (click)="acceptQuoteCustomer(quote)"
+                  [class]="getIconButtonClass(quote, 'acceptCustomer', 'text-emerald-600 hover:text-emerald-700')"
                   title="Accept quotation"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -776,7 +776,7 @@ export class QuoteListComponent implements OnInit {
     });
   }
 
-  acceptQuoteBuyer(quote: Quote) {
+  acceptQuoteCustomer(quote: Quote) {
     const shortId = this.extractShortId(quote.id);
     const confirmAccept = confirm(`Are you sure you want to accept the quotation?`);
     
@@ -784,7 +784,7 @@ export class QuoteListComponent implements OnInit {
       return;
     }
 
-    console.log('Buyer accepting quotation:', quote.id);
+    console.log('Customer accepting quotation:', quote.id);
     
     this.quoteService.updateQuoteStatus(quote.id!, 'accepted').subscribe({
       next: (updatedQuote) => {
@@ -793,7 +793,7 @@ export class QuoteListComponent implements OnInit {
           this.quotes[index] = updatedQuote;
           this.filterQuotesByStatus();
         }
-        console.log('Quotation successfully accepted by buyer');
+        console.log('Quotation successfully accepted by customer');
         this.notificationService.showSuccess(`Quotation ${shortId} has been accepted successfully.`);
       },
       error: (error) => {
@@ -975,13 +975,13 @@ export class QuoteListComponent implements OnInit {
       case 'cancel':
         return isFinalized; // Disabled for both accepted and cancelled
       case 'downloadAttachment':
-        return isCancelled; // Only disabled for cancelled quotes, buyers can download when accepted
+        return isCancelled; // Only disabled for cancelled quotes, customers can download when accepted
       case 'accept':
         // Accept button is only for providers when quote is pending
         // It should not be disabled by finalization since it only shows when pending
         return false;
-      case 'acceptBuyer':
-        // Buyer accept button is only for buyers when quote is approved
+      case 'acceptCustomer':
+        // Customer accept button is only for customers when quote is approved
         // It should not be disabled by finalization since it only shows when approved
         return false;
       case 'addRequestedDate':
